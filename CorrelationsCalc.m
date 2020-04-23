@@ -1,10 +1,10 @@
-function [LinRvals,PeaRvals] = CorrelationsCalc(outstruct,idx,fpath)
+function [LinRvals,PeaRvals] = CorrelationsCalc(outstruct,idx,directory)
 % Calculates Lin and Pearson correlations from a pre-created outstruct,
 % with a specified index (idx) that indicates which row of the outstruct to
 % calculate these metrics for.
 
 if nargin < 3
-    fpath = cd;
+    directory = [cd filesep 'MatFiles'];
 end
 
 % Define gross anatomical regions of interest
@@ -21,7 +21,7 @@ for i = 1:length(indcell)
     testinds = indcell{i};
     
     % Extract Kim et al, 2017 interneuron data from pre-created file
-    load([fpath filesep 'kim_totals_reorder_m.mat']);
+    load([directory filesep 'kim_totals_reorder_m.mat']);
     kim_totals_reorder = kim_totals_reorder(testinds,:);
     nonnaninds = zeros(size(kim_totals_reorder));
     for j = 1:size(kim_totals_reorder,2)
