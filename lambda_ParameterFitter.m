@@ -1,4 +1,4 @@
-function [lambdastruct, peakind, sumfit_mat] = lambda_ParameterFitter(voxvgene, genevct, gene_names, ng_param_list, lambda_param_list)
+function [lambdastruct, peakind] = lambda_ParameterFitter(voxvgene, genevct, gene_names, ng_param_list, lambda_param_list)
 % This function performs a brute-force parameter sweep to find the maximal
 % performance of a given subset selection method. The user MUST supply
 % voxvgene and genevct, which are outputs of ProcessedData_Generator.m, and

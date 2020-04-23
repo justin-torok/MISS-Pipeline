@@ -1,15 +1,16 @@
-function Gene_Expression_Slice_Maps(gene_names,slicelocs,savenclose)
+function Gene_Expression_Slice_Maps(gene_names,slicelocs,savenclose,directory)
 
 % 1. Load raw data and dependencies for mapping; define defaults
-load('PresetInputs.mat','regvgene','entrez_names','GENGDmod','nonzerovox');
-
-if nargin < 3
-    savenclose = 0;
-    if nargin < 2
-        slicelocs = 34;
+if nargin < 4
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 3
+        savenclose = 0;
+        if nargin < 2
+            slicelocs = 34;
+        end
     end
 end
-
+load([directory filesep 'PresetInputs.mat'],'regvgene','entrez_names','GENGDmod','nonzerovox');
 % 2. Define density matrix and ensure gene names are valid
 test = ismember(gene_names,entrez_names);
 if ~all(test)

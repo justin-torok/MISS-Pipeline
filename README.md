@@ -12,6 +12,8 @@ Step 2: Download the following [Zip File](https://drive.google.com/file/d/1fznvX
 ## 2. Files
 Below is a short description of each of the code files contained in the MISS-Pipeline folder, grouped by general functionality in alphabetical order. The "ExtraCode" folder contains code that is either outdated or incomplete, and none of the functions in the main folder require any of those scripts to run. Scripts that are also functions have their inputs and outputs described, with required inputs in boldface text and optional inputs with their default setting in parentheses.
 
+`MISS_demo.m` walks through the basic functionality of the MISS pipeline and demonstrates several of the plotting functions.
+
 ### Data Preprocessing
 - `Cell_Type_Data_Extract.m`: Data preprocessing function that outputs average expression profiles per cell type
     - ***Inputs***:
@@ -21,6 +23,12 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - meanexprmat: An n_genes x n_types numeric array of average gene expression profiles for each cell type
         - classkey: A 1 x n_types cell array of string descriptors of each cell type, in the same order as the columns of meanexprmat
         - entrez_names: A n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of meanexprmat
+- `ISH_Data_Extract.m`: Data preprocessing function that outputs the voxel-wise gene expression for the consensus genes between the scRNAseq and ISH data sets, averaging duplicate probes where necessary. 
+    - ***Inputs***:
+        - **classstruct**: MATLAB struct that is output by `scRNAseq_Data_Extract.m` that contains raw scRNAseq data grouped by cell type
+        - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
+    - ***Outputs***:
+        - regvgene: An n_genes x n_voxels numeric array of ISH gene expression per voxel, normalized by gene
 
 ### Cell Count Inference and Analysis
 - `CellDensityInference.m`: Function that performs the non-negative matrix inversion to determine cell density per voxel from ISH and scRNAseq data, after gene subsetting and data normalization. Called by `nG_ParameterFitter.m`.
@@ -39,12 +47,79 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - PeaRvals: A MATLAB struct with six fields ('pv', 'sst', 'vip', 'all', 'micro', 'neuron'), each of which contains a 1x3 numeric array of Pearson correlation coefficients between MISS-inferred counts and data for neocortical regions only, forebrain (neocortical, subcortical, olfactory, and thalamic) regions only, and all brain regions, respectively
 - `Density_to_Counts.m`: Function that performs rescales the voxel-wise densities output by `CellDensityInference.m` into cell counts using a global rescaling factor, relying upon data from [Murakami *et al*, 2018](https://www.nature.com/articles/s41593-018-0109-1). Called by `nG_ParameterFitter.m`.
     - ***Inputs***:
-        - **B**: A n_voxels x n_types numeric array of inferred cell type density per voxel, in arbitrary units
+        - **B**: n_voxels x n_types numeric array of inferred cell type density per voxel, in arbitrary units
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
-        - B_corrected: A n_voxels x n_types numeric array of inferred cell counts per voxel
-        - Bfactor: The scalar multiplication factor used to correct B
-
+        - B_corrected: n_voxels x n_types numeric array of inferred cell counts per voxel
+        - Bfactor: scalar multiplication factor used to correct B
+- `GeneSelector.m`: Function that performs gene subset selection according to the various information-theoretic methods used in the manuscript. Called by `nG_ParameterFitter.m`, among others. See the manuscript for further details.
+    - ***Inputs***:
+        - **genevct**: n_genes x n_types numeric array of gene expression per cell type
+        - **voxvgene**: n_genes x n_voxels numeric array of gene expression per voxel
+        - **gene_names**: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of genevct and voxvgene
+        - **ngen_param**: scalar indicating the cutoff for gene inclusion
+        - lambda (default "150"): scalar indicating the lambda value for MRx3-based subset selection
+        - method (default "MRx3"): character array specifying the gene subset selection method to use
+        - preloadinds (default "[]"): 1 x n_genes numeric array of indices ranked in the order of decreasing criterion value (e.g. genes with higher MRx3 criterion values are closer to the top); only useful from a computational efficiency perspective when the method chosen is MRx3 and multiple ngen_param values are being tested for a given lambda value (see `nG_ParameterFitter.m` line 40).
+    - ***Outputs***:
+        - E_red: n_genes x n_voxels numeric array of gene expression per voxel, where n_genes has been constrained by ngen_param
+        - C_red: n_genes x n_types numeric array of gene expression per cell type, where n_genes has been constrained by ngen_param
+        - nGen: scalar value of n_genes (size of E_red/C_red row dimension)
+        - reduced_gene_names: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of E_red and C_red, where n_genes has been constrained by ngen_param
+- `lambda_ParameterFitter.m`: Function that determines the optimal (n*G*,lambda) pair for given lists of n*G* parameters and lambda values in a brute-force fashion for MRx3-based subset selection. Functions as a wrapper for `nG_ParameterFitter.m` for multiple lambda values.
+    - ***Inputs***:
+        - **voxvgene**: n_genes x n_voxels numeric array of gene expression per voxel
+        - **genevct**: n_genes x n_types numeric array of gene expression per cell type
+        - **gene_names**: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of genevct and voxvgene
+        - ng_param_list (default "100:70:800"): numeric array of n*G* cutoff values
+        - lambda_param_list (default "50:50:500"): numeric array of lambda values
+    - ***Outputs***:
+        - lambdastruct: 1 x (length(ng_param_list) * length(lambda_param_list)) MATLAB struct with the following fields:
+            - Bvals: n_voxels x n_types numeric array of cell densities per voxel (output of `CellDensityInference.m`)
+            - nGen: scalar value of n*G*
+            - lambda: scalar value of lambda
+            - corrB: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
+            - Bsums: n_regions x n_types numeric array of cell counts per CCF region (output of `Voxel_to_Region.m`)
+            - Bmeans: n_regions x n_types numeric array of cell densities per CCF region in units of counts/(0.2mm)^3 (output of `Voxel_to_Region.m`)
+            - LinR: 1 x 1 MATLAB struct of Lin's concordance correlation coefficients (output of `CorrelationsCalc.m`)
+            - PearsonR: 1 x 1 MATLAB struct of Pearson correlation coefficients (output of `CorrelationsCalc.m`)
+            - sumfit: scalar value of the sum fit metric
+        - peakind: scalar index of the (n*G*,lambda) pair in lambdastruct that has the peak sum fit value
+- `mRMR_Selector.m`: Function that performs mRMR-based gene subset selection; called by `GeneSelector.m`. See manuscript for more details.
+    - ***Inputs***:
+        - **C**: n_genes x n_types numeric array of gene expression per type, column-normalized
+        - **n**: scalar cutoff of number of genes
+        - **method**: character array indicating whether the quotient or difference criterion is to be used
+    - ***Outputs***:
+        - geneinds: 1 x n numeric array of gene indices to include from PresetInputs.mat\entrez_names
+- `MRx3_Selector.m`: Function that performs MRx3-based gene subset selection; called by `GeneSelector.m`. See manuscript for more details.
+    - ***Inputs***:
+        - **C_raw**: n_genes x n_types numeric array of gene expression per type
+        - **E**: n_genes x n_voxels numeric array of gene expression per voxel
+        - **n**: scalar cutoff of number of genes
+        - **lambda**: scalar lambda parameter value
+    - ***Outputs***:
+        - geneinds: 1 x n numeric array of gene indices to include from PresetInputs.mat\entrez_names        
+- `nG_ParameterFitter.m`: Function that determines the optimal n*G* for a given list of n*G* parameters in a brute-force fashion for a user-defined gene subset selection method.
+    - ***Inputs***:
+        - **voxvgene**: n_genes x n_voxels numeric array of gene expression per voxel
+        - **genevct**: n_genes x n_types numeric array of gene expression per cell type
+        - **gene_names**: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of genevct and voxvgene
+        - **method**: character array specifying the gene subset selection method to use
+        - ng_param_list (default depends on method): numeric array of ng_param cutoff values
+        - lambda (default "150"): lambda value (only relevant for MRx3 method)
+    - ***Outputs***:
+        - outstruct: 1 x length(ng_param_list MATLAB struct with the following fields:
+            - Bvals: n_voxels x n_types numeric array of cell densities per voxel (output of `CellDensityInference.m`)
+            - nGen: scalar value of n*G*
+            - lambda: scalar value of lambda (only present if method used is MRx3)
+            - corrB: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
+            - Bsums: n_regions x n_types numeric array of cell counts per CCF region (output of `Voxel_to_Region.m`)
+            - Bmeans: n_regions x n_types numeric array of cell densities per CCF region in units of counts/(0.2mm)^3 (output of `Voxel_to_Region.m`)
+            - LinR: 1 x 1 MATLAB struct of Lin's concordance correlation coefficients (output of `CorrelationsCalc.m`)
+            - PearsonR: 1 x 1 MATLAB struct of Pearson correlation coefficients (output of `CorrelationsCalc.m`)
+            - sumfit: scalar value of the sum fit metric
+        - peakind: scalar index of the (n*G*,lambda) pair in lambdastruct that has the peak sum fit value        
 ### Visualization
 - `brainframe.m`: Tool that plots regional or voxel-wise densities on a 3-D rendering of the brain, using MATLAB's built-in isosurface and point cloud functionalities.
     - ***Inputs***:
@@ -181,16 +256,24 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
     - ***Outputs***:
         - None
-- `Figure_6d_ribrainframe.m`: Function that creates `brainframe.m` renderings of the regional clustering by developmental ontology and cell type as point clouds centered on the center-of-mass of each region, with color-coding used to indicate cluster identity. Used to generate panel 6d in the manuscript.
+- `Figure_6d_ribrainframe.m`: Function that creates `brainframe.m` renderings of the regional clustering by developmental ontology and cell type as point clouds centered on the center-of-mass of each region, with color-coding used to indicate cluster identity. Used to generate panel 6d in the manuscript. (Note: does not work for mid/hindbrain clustering visualization)
     - ***Inputs***:
-        - **randstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
+        - **randstruct**: MATLAB struct that is output by `Rand_Index_Calc.m` containing the relevant Rand Index-related metrics and associated cell-type-based regional clusterings
         - savenclose (default "1"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
         - None
 - `Figure_6d_rihistograms.m`: Function that creates histograms for each cluster number *k* showing the null distribution of Rand Index values along with the Rand Index between developmental ontology and cell type clusterings. Used to generate panel 6d in the manuscript.
     - ***Inputs***:
-        - **randstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
+        - **randstruct**: MATLAB struct that is output by `Rand_Index_Calc.m` containing the relevant Rand Index-related metrics and associated cell-type-based regional clusterings
         - savenclose (default "1"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
+    - ***Outputs***:
+        - None
+- `Gene_Expression_Slice_Maps.m`: Function that plots voxel-wise gene expression energy from the AIBS ISH data set on user-selected coronal slices. Used to generate figure panel 1a in the manuscript.
+    - ***Inputs***:
+        - **gene_names**: cell array of character arrays of standard gene symbols corresponding to entries of PresetInputs.mat\entrez_names
+        - slicelocs (default "34"): numeric array of indices indicating which coronal slices to render
+        - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
+        - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
         - None
