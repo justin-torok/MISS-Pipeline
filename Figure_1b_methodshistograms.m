@@ -1,4 +1,4 @@
-function Figure_1b_methodshistograms(method,ngen_param,types,savenclose,directory)
+function Figure_1b_methodshistograms(method,ngen_param,typeinds,savenclose,directory)
 %all non-ontology vars necessary for generating input matrices
 
 % strrepper = @(x) strrep(x, '_', ' ');
@@ -139,7 +139,7 @@ elseif strcmp(method,'mRMR') || strcmp(method,'MRx3')
         close
     end
 elseif strcmp(method,'DBSCAN')
-    for i = types
+    for i = typeinds
 %         type = strrepper(classkey{i});
         figure; hold on;
         curtype = genenorm(:,i);

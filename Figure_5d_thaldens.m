@@ -1,9 +1,11 @@
-function Figure_5d_thaldens(outstruct,idx,savenclose)
-
-if nargin < 3
-    savenclose = 0;
+function Figure_5d_thaldens(outstruct,idx,savenclose,directory)
+if nargin < 4
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 3
+        savenclose = 0;
+    end
 end
-load('PresetInputs.mat','classkey');  
+load([directory filesep 'PresetInputs.mat'],'classkey');  
 regsums = sum(outstruct(idx).Bsums);
 regsums = repmat(regsums,426,1);
 ct_regprop = outstruct(idx).Bsums ./ regsums;

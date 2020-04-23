@@ -2,10 +2,13 @@ function [randstruct] = Rand_Index_Calc(outstruct,idx,onttype,directory)
 
 if nargin < 4
     directory = [cd filesep 'MatFiles'];
+    if nargin < 3
+        onttype = 'fore';
+    end
 end
 ontstr = ['ontologystruct_' onttype];
 ontstruct = load([directory filesep ontstr '.mat'], ontstr);
-[~, cell_types] = Voxel_To_Region_Bilateral(outstruct(idx).corrB);
+[~, cell_types] = Voxel_To_Region_Bilateral(outstruct(idx).corrB,directory);
 randstruct = struct;
 randstruct.onttype = onttype;
 

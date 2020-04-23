@@ -1,14 +1,20 @@
-function Figure_6a_dendrograms(outstruct,idx,onttype,savenclose)
+function Figure_6a_dendrograms(outstruct,idx,onttype,savenclose,directory)
 
-if nargin < 4
-    savenclose = 0;
+if nargin < 5
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 4
+        savenclose = 0;
+        if nargin < 3
+            onttype = 'fore';
+        end
+    end
 end
 
 ontstr = ['ontologystruct_' onttype];
-ontstruct = load([ontstr '.mat'], ontstr);
+ontstruct = load([directory filesep ontstr '.mat'], ontstr);
 clusts = ontstruct.(ontstr).ABI.clusters;
 
-[~, cell_types] = Voxel_To_Region_Bilateral(outstruct(idx).corrB);
+[~, cell_types] = Voxel_To_Region_Bilateral(outstruct(idx).corrB, directory);
 X = cell_types; X(12,:) = [];
 
 M(1:11) = 1; M(12:23) = 2; M(24:26) = 3; M(27:37) = 4; M(38:57) = 5;
@@ -78,7 +84,7 @@ if savenclose
 end
 
 rng('default');
-pdistmat = zeros(142,142);
+pdistmat = zeros(size(clusts,1));
 for i = 1:size(pdistmat,1)
     for j = 1:size(pdistmat,2)
         if j > i
@@ -99,7 +105,7 @@ Z = linkage(Y,'average');
 T = cluster(Z,'MaxClust',2);
 optimleaford = optimalleaforder(Z,Y);
 figure('Units', 'inch', 'Position', [0 0 15 6]);
-[D2,~,outperm] = dendrogram(Z,142,'reorder',optimleaford); hold on;
+[D2,~,outperm] = dendrogram(Z,size(clusts,1),'reorder',optimleaford); hold on;
 set(D2,'LineWidth',2);
 set(D2,'Color','k');
 set(gca,'XTick',[]);
@@ -109,12 +115,12 @@ is1 = ismember(outperm,f1);
 is2 = ismember(outperm,f2);
 splits = [is1.' is2.'];
 splits = splits * 5.5;
-A2 = area([(0:143).' (0:143).'],[5.5 0;splits;0 5.5],'FaceAlpha',0.1,'EdgeAlpha',0.1,'LineWidth',2.5); hold on;
+A2 = area([(0:size(clusts,1)+1).' (0:size(clusts,1)+1).'],[5.5 0;splits;0 5.5],'FaceAlpha',0.1,'EdgeAlpha',0.1,'LineWidth',2.5); hold on;
 set(A2,{'facecolor'},{'g';'m'});
 set(A2,'EdgeColor','w');
 ax = gca;
 set(ax,'YColor',[1 1 1]);
-xlim([0 143]);
+xlim([0 size(clusts,1)+1]);
 ylim([0 5.5]);
 title('Developmental Ontology Divisions','FontSize',30);
 if savenclose
@@ -131,6 +137,5 @@ if savenclose
     print('dendogramontology_colorbar','-dtiffn');
     close
 end
-
 
 end
