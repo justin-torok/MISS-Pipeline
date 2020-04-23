@@ -1,4 +1,4 @@
-function Cell_Type_Brainframe(outstruct,idx,types,savenclose,view_,directory)
+function Cell_Type_Brainframe(outstruct,idx,typeinds,savenclose,view_,directory)
 if nargin < 6
     directory = [cd filesep 'MatFiles'];
     if nargin < 5
@@ -14,8 +14,8 @@ load([directory filesep 'input_struct_voxelrender'],'input_struct');
 
 input_struct.savenclose = savenclose;
 
-for j = 1:length(types)
-    testvals = outstruct(idx).Bvals(:,types(j));
+for j = 1:length(typeinds)
+    testvals = outstruct(idx).Bvals(:,typeinds(j));
     datamap = zeros(size(GENGDmod));
     for i = 1:length(structList)
         [~,voxinds] = ismember(structIndex{i},nonzerovox);
@@ -29,7 +29,7 @@ for j = 1:length(types)
     interpmap(interpmap<0) = 0;
     datinput = interpmap;
     input_struct.data = datinput;
-    input_struct.img_labels = classkey{types(j)};
+    input_struct.img_labels = classkey{typeinds(j)};
     if ~isempty(view_) && savenclose == 1
         input_struct.savenclose = 0;
         figure;

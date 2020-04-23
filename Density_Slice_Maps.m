@@ -1,14 +1,16 @@
-function Density_Slice_Maps(outstruct,idx,typeinds,slicelocs,savenclose)
+function Density_Slice_Maps(outstruct,idx,typeinds,slicelocs,savenclose,directory)
 
 % 1. Load raw data and dependencies for mapping; define defaults
-load('PresetInputs.mat','classkey','GENGDmod','nonzerovox');
-
-if nargin < 5
-    savenclose = 0;
-    if nargin < 4
-        slicelocs = [25,30,47];
+if nargin < 6
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 5
+        savenclose = 0;
+        if nargin < 4
+            slicelocs = [25,30,47];
+        end
     end
 end
+load([directory filesep 'PresetInputs.mat'],'classkey','GENGDmod','nonzerovox');
 typenames = classkey(typeinds);
 
 % 2. Define densities

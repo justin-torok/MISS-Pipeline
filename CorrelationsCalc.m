@@ -33,7 +33,7 @@ for i = 1:length(indcell)
     kim_vip_wb = kim_totals_reorder(nonnaninds(:,3),3);
     
     % Extract Murakami et al, 2018 total cell data from pre-created file
-    load('murakami_totals_reorder.mat'); 
+    load([directory filesep 'murakami_totals_reorder.mat']); 
     murakami_totals_reorder = murakami_totals_reorder(testinds);
     nonzeroinds = find(murakami_totals_reorder);
     murakami_tot = murakami_totals_reorder(nonzeroinds);
@@ -47,8 +47,8 @@ for i = 1:length(indcell)
     sumcts_sum = sum(sumcts_wb_mod(nonzeroinds,:),2);
     
     % Extract Keller et al, 2018 microglia data from pre-created files
-    load('keller_micro_totals_reorder.mat');
-    load('keller_micro_listB.mat');
+    load([directory filesep 'keller_micro_totals_reorder.mat']);
+    load([directory filesep 'keller_micro_listB.mat']);
     
     sumcts_micro_wb = sumcts_wb(:,23);
     sumcts_neuron_wb = sum(sumcts_wb(:,1:21),2);
@@ -66,8 +66,8 @@ for i = 1:length(indcell)
     
     % Extract Herculano-Houzel et al, 2013 total neuron data from
     % pre-created files
-    load('herculano_houzel_neuron_totals_reorder.mat');
-    load('herculano_houzel_neuron_listB.mat');
+    load([directory filesep 'herculano_houzel_neuron_totals_reorder.mat']);
+    load([directory filesep 'herculano_houzel_neuron_listB.mat']);
     hh_neuron = [];
     infer_neuron = [];
     for j = 1:size(herculano_houzel_neuron_listB)
