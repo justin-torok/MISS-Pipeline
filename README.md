@@ -174,21 +174,21 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
-        - None - 
-`Figure_6bc_aristats.m`: Function that creates the line and bar plots displaying the agreement between clusterings for every cluster number *k* using Adjusted Rand Index, as shown in panels 6b and 6c of the manuscript
+        - None
+- `Figure_6bc_aristats.m`: Function that creates the line and bar plots displaying the agreement between clusterings for every cluster number *k* using Adjusted Rand Index, as shown in panels 6b and 6c of the manuscript
     - ***Inputs***:
         - **randstruct**: MATLAB struct that is output by `Rand_Index_Calc.m` containing the relevant Rand Index-related metrics and associated cell-type-based regional clusterings
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
     - ***Outputs***:
         - None
-`Figure_6d_ribrainframe.m`: Function that creates `brainframe.m` renderings of the regional clustering by developmental ontology and cell type as point clouds centered on the center-of-mass of each region, with color-coding used to indicate cluster identity. Used to generate panel 6d in the manuscript.
+- `Figure_6d_ribrainframe.m`: Function that creates `brainframe.m` renderings of the regional clustering by developmental ontology and cell type as point clouds centered on the center-of-mass of each region, with color-coding used to indicate cluster identity. Used to generate panel 6d in the manuscript.
     - ***Inputs***:
         - **randstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - savenclose (default "1"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
         - None
-`Figure_6d_rihistograms.m`: Function that creates histograms for each cluster number *k* showing the null distribution of Rand Index values along with the Rand Index between developmental ontology and cell type clusterings. Used to generate panel 6d in the manuscript.
+- `Figure_6d_rihistograms.m`: Function that creates histograms for each cluster number *k* showing the null distribution of Rand Index values along with the Rand Index between developmental ontology and cell type clusterings. Used to generate panel 6d in the manuscript.
     - ***Inputs***:
         - **randstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - savenclose (default "1"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
