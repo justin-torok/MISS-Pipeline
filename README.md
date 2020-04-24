@@ -70,17 +70,17 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - C_red: n_genes x n_types numeric array of gene expression per cell type, where n_genes has been constrained by ngen_param
         - nGen: scalar value of n_genes (size of E_red/C_red row dimension)
         - reduced_gene_names: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of E_red and C_red, where n_genes has been constrained by ngen_param
-- `lambda_ParameterFitter.m`: Function that determines the optimal (n*G*,lambda) pair for given lists of n*G* parameters and lambda values in a brute-force fashion for MRx3-based subset selection. Functions as a wrapper for `nG_ParameterFitter.m` for multiple lambda values.
+- `lambda_ParameterFitter.m`: Function that determines the optimal (*n*G,lambda) pair for given lists of *n*G parameters and lambda values in a brute-force fashion for MRx3-based subset selection. Functions as a wrapper for `nG_ParameterFitter.m` for multiple lambda values.
     - ***Inputs***:
         - **voxvgene**: n_genes x n_voxels numeric array of gene expression per voxel
         - **genevct**: n_genes x n_types numeric array of gene expression per cell type
         - **gene_names**: n_genes x 1 cell array of standard gene abbreviations of each gene, in the same order as the rows of genevct and voxvgene
-        - ng_param_list (default "100:70:800"): numeric array of n*G* cutoff values
+        - ng_param_list (default "100:70:800"): numeric array of *n*G cutoff values
         - lambda_param_list (default "50:50:500"): numeric array of lambda values
     - ***Outputs***:
         - lambdastruct: 1 x (length(ng_param_list) * length(lambda_param_list)) MATLAB struct with the following fields:
             - Bvals: n_voxels x n_types numeric array of cell densities per voxel (output of `CellDensityInference.m`)
-            - nGen: scalar value of n*G*
+            - nGen: scalar value of *n*G
             - lambda: scalar value of lambda
             - corrB: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
             - Bsums: n_regions x n_types numeric array of cell counts per CCF region (output of `Voxel_to_Region.m`)
@@ -88,14 +88,14 @@ Below is a short description of each of the code files contained in the MISS-Pip
             - LinR: 1 x 1 MATLAB struct of Lin's concordance correlation coefficients (output of `CorrelationsCalc.m`)
             - PearsonR: 1 x 1 MATLAB struct of Pearson correlation coefficients (output of `CorrelationsCalc.m`)
             - sumfit: scalar value of the sum fit metric
-        - peakind: scalar index of the (n*G*,lambda) pair in lambdastruct that has the peak sum fit value
+        - peakind: scalar index of the (*n*G,lambda) pair in lambdastruct that has the peak sum fit value
 - `mRMR_Selector.m`: Function that performs mRMR-based gene subset selection; called by `GeneSelector.m`. See manuscript for more details.
     - ***Inputs***:
         - **C**: n_genes x n_types numeric array of gene expression per type, column-normalized
         - **n**: scalar cutoff of number of genes
         - **method**: character array indicating whether the quotient or difference criterion is to be used
     - ***Outputs***:
-        - geneinds: 1 x n numeric array of gene indices to include from PresetInputs.mat\entrez_names
+        - geneinds: 1 x n numeric array of gene indices to include from `PresetInputs.mat\entrez_names`
 - `MRx3_Selector.m`: Function that performs MRx3-based gene subset selection; called by `GeneSelector.m`. See manuscript for more details.
     - ***Inputs***:
         - **C_raw**: n_genes x n_types numeric array of gene expression per type
@@ -103,8 +103,8 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - **n**: scalar cutoff of number of genes
         - **lambda**: scalar lambda parameter value
     - ***Outputs***:
-        - geneinds: 1 x n numeric array of gene indices to include from PresetInputs.mat\entrez_names        
-- `nG_ParameterFitter.m`: Function that determines the optimal n*G* for a given list of n*G* parameters in a brute-force fashion for a user-defined gene subset selection method.
+        - geneinds: 1 x n numeric array of gene indices to include from `PresetInputs.mat\entrez_names`       
+- `nG_ParameterFitter.m`: Function that determines the optimal *n*G for a given list of *n*G parameters in a brute-force fashion for a user-defined gene subset selection method.
     - ***Inputs***:
         - **voxvgene**: n_genes x n_voxels numeric array of gene expression per voxel
         - **genevct**: n_genes x n_types numeric array of gene expression per cell type
@@ -115,7 +115,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Outputs***:
         - outstruct: 1 x length(ng_param_list MATLAB struct with the following fields:
             - Bvals: n_voxels x n_types numeric array of cell densities per voxel (output of `CellDensityInference.m`)
-            - nGen: scalar value of n*G*
+            - nGen: scalar value of *n*G
             - lambda: scalar value of lambda (only present if method used is MRx3)
             - corrB: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
             - Bsums: n_regions x n_types numeric array of cell counts per CCF region (output of `Voxel_to_Region.m`)
@@ -143,7 +143,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct 
         - cell_names (default "{'L2n3','L4','L5IT','L5PT','L6CT','L6IT','L6b'}"): 1 x n_layer_types cell array of layer-specific glutamatergic cell names
-        - cell_inds (default "9:15"): 1 x n_layer_types numeric array of indices corresponding to the location of the types in cell_names within PresetInputs.mat\classkey
+        - cell_inds (default "9:15"): 1 x n_layer_types numeric array of indices corresponding to the location of the types in cell_names within `PresetInputs.mat\classkey`
         - ranks (default "[1 2 3 3 4 4 4]"): 1 x n_layer_types numeric array of expected type ordering based on functional annotation; ties are allowed
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
@@ -153,14 +153,14 @@ Below is a short description of each of the code files contained in the MISS-Pip
             - tau_perslice: scalar, mean per-slice tau value across the whole brain (in practice very similar to tau)
             - pval: scalar, assessment of significance of the tau value
             - bic_pct: scalar, BIC value (legacy)
-- `Voxel_to_Region.m`: Function that takes cell counts per voxel and groups them into cell counts and cell densities in 426 CCF regions, with right hemispheric regions constituting the first 213 entries of the resulting matrices. See listB.mat for the order of regions in our convention.
+- `Voxel_to_Region.m`: Function that takes cell counts per voxel and groups them into cell counts and cell densities in 426 CCF regions, with right hemispheric regions constituting the first 213 entries of the resulting matrices. See `listB.mat` for the order of regions in our convention.
     - ***Inputs***:
         - **D**: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
         - cell_types_sum: n_regions (426) x n_types numeric array of cell counts per CCF region
         - cell_types_mean: n_regions (426) x n_types numeric array of cell densities (in counts/(0.2mm)^3)  per CCF region
-- `Voxel_to_Region_Bilateral.m`: Function that takes cell counts per voxel and groups them into cell counts and cell densities in 213 bilateral regions in the CCF. See listB.mat for the order of regions in our convention.
+- `Voxel_to_Region_Bilateral.m`: Function that takes cell counts per voxel and groups them into cell counts and cell densities in 213 bilateral regions in the CCF. See `listB.mat` for the order of regions in our convention.
     - ***Inputs***:
         - **D**: n_voxels x n_types numeric array of cell counts per voxel (output of `Density_to_Counts.m`)
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
@@ -177,7 +177,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct 
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in Preset_Inputs.mat\classkey
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - view_ (default "[]"): 1x3 numeric array specifying an argument to MATLAB view(). If supplied with savenclose = 1, this custom view is saved along with the three on-axis views 
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
@@ -187,7 +187,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct 
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in Preset_Inputs.mat\classkey
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
         - slicelocs (default "[25,30,47]"): numeric array of indices indicating which coronal slices to render
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
@@ -203,7 +203,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **method**: character array indicating which subset selection method to use
         - **ngen_param**: scalar indicating the cutoff for gene inclusion
-        - **typeinds** (required only for method = "DBSCAN"): numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in Preset_Inputs.mat\classkey
+        - **typeinds** (required only for method = "DBSCAN"): numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
@@ -224,7 +224,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - None
 - `Figure_2d_correlationmaps.m`: Function that plots voxel-wise correlations between cell type expression profiles and ISH expression on user-selected coronal slices following methodology described in [Zeisel *et al*, 2018](https://www.cell.com/cell/fulltext/S0092-8674(18)30789-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741830789X%3Fshowall%3Dtrue), with the gene set used subject to subset selection. Used to generate figure panel 2d in the manuscript.
     - ***Inputs***:
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in Preset_Inputs.mat\classkey
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
         - **method**: character array indicating which subset selection method to use
         - **ngen_param**: scalar indicating the cutoff for gene inclusion
         - lambda (default "150"): scalar indicating the lambda value for MRx3-based subset selection
@@ -318,7 +318,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - None
 - `Gene_Expression_Slice_Maps.m`: Function that plots voxel-wise gene expression energy from the AIBS ISH data set on user-selected coronal slices. Used to generate figure panel 1a in the manuscript.
     - ***Inputs***:
-        - **gene_names**: cell array of character arrays of standard gene symbols corresponding to entries of PresetInputs.mat\entrez_names
+        - **gene_names**: cell array of character arrays of standard gene symbols corresponding to entries of `PresetInputs.mat\entrez_names`
         - slicelocs (default "34"): numeric array of indices indicating which coronal slices to render
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
