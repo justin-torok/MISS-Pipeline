@@ -43,7 +43,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - B: A n_voxels x n_types numeric array of inferred cell type density per voxel, in arbitrary units
 - `CorrelationsCalc.m`: Function that performs Pearson correlations and Lin's concordance correlations between the inferred and empirically determined cell counts from various previously published studies for three groups of brain regions (neocortical regions only, forebrain regions only, and all brain regions). *Pvalb*+, *Sst*+, and *Vip*+ counts are compared against [Kim *et al*, 2017](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5870827/); total cell counts are compared against [Murakami *et al*, 2018](https://www.nature.com/articles/s41593-018-0109-1); microglia cell counts are compared against [Keller *et al*, 2018](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6205984/); total neuron counts are compared against [Herculano-Houzel *et al*, 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3800983/). Called by `nG_ParameterFitter.m`.
     - ***Inputs***:
-        - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
+        - **outstruct**: MATLAB struct that contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
