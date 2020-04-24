@@ -29,7 +29,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
         - regvgene: An n_genes x n_voxels numeric array of ISH gene expression per voxel, normalized by gene
-
+- `scRNAseq_Data_Extract.m`: Data preprocessing function
 ### Cell Count Inference and Analysis
 - `CellDensityInference.m`: Function that performs the non-negative matrix inversion to determine cell density per voxel from ISH and scRNAseq data, after gene subsetting and data normalization. Called by `nG_ParameterFitter.m`.
     - ***Inputs***:
@@ -119,7 +119,24 @@ Below is a short description of each of the code files contained in the MISS-Pip
             - LinR: 1 x 1 MATLAB struct of Lin's concordance correlation coefficients (output of `CorrelationsCalc.m`)
             - PearsonR: 1 x 1 MATLAB struct of Pearson correlation coefficients (output of `CorrelationsCalc.m`)
             - sumfit: scalar value of the sum fit metric
-        - peakind: scalar index of the (n*G*,lambda) pair in lambdastruct that has the peak sum fit value        
+        - peakind: scalar index of the (n*G*,lambda) pair in lambdastruct that has the peak sum fit value
+- `Rand_Index_Calc.m`: Function that calculates the Adjusted Rand Index for a given set of regional cell type densities. See manuscript for further details.
+    - ***Inputs***:
+        - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
+        - **idx**: numeric index specifying input parameter in outstruct 
+        - onttype (default "fore"): character array specifying whether to use forebrain regions or mid/hindbrain regions
+        - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
+    - ***Outputs***:
+        - randstruct: 1 x 1 MATLAB struct with the following fields:
+            - nclust: 1 x n_clusterings numeric array of cluster numbers *k* in the AIBS developmental ontology
+            - RandIndexT: 1 x n_clusterings numeric array of uncorrected Rand Index values per cluster number *k* between the cell type clustering and developmental ontology
+            - RandIndexRandom: n_clusterings x iters numeric array of uncorrected Rand Index values per cluster number *k* between the random clusterings and developmental ontology
+            - AdjustedRand: 1 x n_clusterings numeric array of Adjusted Rand Index values per cluster number *k* between the cell type clustering and developmental ontology given the null distribution of RI values
+            - StdAboveMean: 1 x n_clusterings numeric array of numbers of standard deviations above the mean per cluster number *k* of the RI between the cell type clustering and developmental ontology relative to the null distribution of RI values
+            - T: n_regions x n_clusterings numeric array of cluster identities per region
+- `TauCalc.m`
+- `Voxel_to_Region.m`
+- `Voxel_to_Region_Bilateral.m`
 ### Visualization
 - `brainframe.m`: Tool that plots regional or voxel-wise densities on a 3-D rendering of the brain, using MATLAB's built-in isosurface and point cloud functionalities.
     - ***Inputs***:
