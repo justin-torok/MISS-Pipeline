@@ -7,7 +7,7 @@ The set of code necessary to run the MISS (Matrix Inversion with Subset Selectio
 All code is written in MATLAB and requires version 2018b or later.
 
 Step 1: Clone this repository into a local directory of your choice.<br>
-Step 2: Download the following [Zip File](https://drive.google.com/file/d/1fznvXSCCQNr3YYYqOLi0TfOzIKJ9oAgg/view?usp=sharing) and unpack its contents in the local copy of the repository, which contains all of the data dependencies necessary to run the code.
+Step 2: Download the following [Zip File](https://drive.google.com/open?id=1nHxxWKUm1lKEAC9VJN5USf0-4fSVI1DW) and unpack its contents in the local copy of the repository, which contains all of the data dependencies necessary to run the code.
 
 ## 2. Files
 Below is a short description of each of the code files contained in the MISS-Pipeline folder, grouped by general functionality in alphabetical order. The "ExtraCode" folder contains code that is either outdated or incomplete, and none of the functions in the main folder require any of those scripts to run. Scripts that are also functions have their inputs and outputs described, with required inputs in boldface text and optional inputs with their default setting in parentheses.
@@ -177,7 +177,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct 
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `PresetInputs.mat\classkey`
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - view_ (default "[]"): 1x3 numeric array specifying an argument to MATLAB view(). If supplied with savenclose = 1, this custom view is saved along with the three on-axis views 
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
@@ -187,7 +187,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **outstruct**: MATLAB struct that is output by either `nG_ParameterFitter.m` or `lambda_ParameterFitter.m` and contains the inferred cell counts per cell type for an array of parameters
         - **idx**: numeric index specifying input parameter in outstruct 
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `PresetInputs.mat\classkey`
         - slicelocs (default "[25,30,47]"): numeric array of indices indicating which coronal slices to render
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
@@ -203,7 +203,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
     - ***Inputs***:
         - **method**: character array indicating which subset selection method to use
         - **ngen_param**: scalar indicating the cutoff for gene inclusion
-        - **typeinds** (required only for method = "DBSCAN"): numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
+        - **typeinds** (required only for method = "DBSCAN"): numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `PresetInputs.mat\classkey`
         - savenclose (default "0"): logical flag that, when true, saves axial, coronal, sagittal, and/or custom views as low-compression .tiff files and then closes the MATLAB figure
         - directory (default "[cd filesep 'MatFiles']"): character array indicating the file path of the MatFiles folder
     - ***Outputs***:
@@ -224,7 +224,7 @@ Below is a short description of each of the code files contained in the MISS-Pip
         - None
 - `Figure_2d_correlationmaps.m`: Function that plots voxel-wise correlations between cell type expression profiles and ISH expression on user-selected coronal slices following methodology described in [Zeisel *et al*, 2018](https://www.cell.com/cell/fulltext/S0092-8674(18)30789-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741830789X%3Fshowall%3Dtrue), with the gene set used subject to subset selection. Used to generate figure panel 2d in the manuscript.
     - ***Inputs***:
-        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `Preset_Inputs.mat\classkey`
+        - **typeinds**: numeric array of indices indicating which cell types to plot, with the indices corresponding to the order of cell types in `PresetInputs.mat\classkey`
         - **method**: character array indicating which subset selection method to use
         - **ngen_param**: scalar indicating the cutoff for gene inclusion
         - lambda (default "150"): scalar indicating the lambda value for MRx3-based subset selection
