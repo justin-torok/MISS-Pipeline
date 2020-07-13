@@ -1,4 +1,4 @@
-function [outstruct, peakind] = nG_ParameterFitter(voxvgene, genevct, gene_names, method, ng_param_list, lambda, costfun, k, C_indivcells, ct_labvec, matdir)
+function [outstruct, peakind] = nG_ParameterFitter(voxvgene, genevct, gene_names, method, ng_param_list, lambda, costfun, k, C_indivcells, ct_labvec)
 % This function performs a brute-force parameter sweep to find the maximal
 % performance of a given subset selection method. The user MUST supply
 % voxvgene and genevct, which are outputs of ProcessedData_Generator.m, and
@@ -14,35 +14,32 @@ function [outstruct, peakind] = nG_ParameterFitter(voxvgene, genevct, gene_names
 % that calls upon this function.
 
 % Default nG parameter lists
-if nargin < 11
-    matdir = cd;
-    if nargin < 10
-        ct_labvec = [];
-        if nargin < 9
-            C_indivcells = [];
-            if nargin < 8
-                k = 4;
-                if nargin < 7
-                    costfun = 'SumFit';
-                    if nargin < 6
-                        lambda = 150;
-                        if nargin < 5
-                            if nargin < 4
-                                error(sprintf('Error. \nUser must supply a voxel x gene matrix, a gene x cell type matrix, a gene names cell array, and a subsetting method'))
-                            end
-                            if ismember(method, {'MRx3','mRMR','colAMD'})
-                                ng_param_list = [100:70:1500, 1750:250:3500, 3855]; 
-                            elseif strcmp(method, 'DBSCAN')
-                                ng_param_list = [0.0001, 0.0004:0.0001:0.001, 0.002:0.001:0.005, 0.015:0.01:0.195]; 
-                            elseif strcmp(method, 'Entropy')
-                                ng_param_list = [0.25,0.5:0.125:2.75,2.8:0.05:3.25];
-                            elseif strcmp(method, 'Zeisel')
-                                ng_param_list = [2:5, 6:2:50]; % made up something here
-                            else
-                                error('Error. \n%s is an incorrect subsetting method identifier',method)
-                            end
-                        end    
-                    end
+if nargin < 10
+    ct_labvec = [];
+    if nargin < 9
+        C_indivcells = [];
+        if nargin < 8
+            k = 4;
+            if nargin < 7
+                costfun = 'SumFit';
+                if nargin < 6
+                    lambda = 150;
+                    if nargin < 5
+                        if nargin < 4
+                            error(sprintf('Error. \nUser must supply a voxel x gene matrix, a gene x cell type matrix, a gene names cell array, and a subsetting method'))
+                        end
+                        if ismember(method, {'MRx3','mRMR','colAMD'})
+                            ng_param_list = [100:70:1500, 1750:250:3500, 3855]; 
+                        elseif strcmp(method, 'DBSCAN')
+                            ng_param_list = [0.0001, 0.0004:0.0001:0.001, 0.002:0.001:0.005, 0.015:0.01:0.195]; 
+                        elseif strcmp(method, 'Entropy')
+                            ng_param_list = [0.25,0.5:0.125:2.75,2.8:0.05:3.25];
+                        elseif strcmp(method, 'Zeisel')
+                            ng_param_list = [2:5, 6:2:50]; % made up something here
+                        else
+                            error('Error. \n%s is an incorrect subsetting method identifier',method)
+                        end
+                    end    
                 end
             end
         end
@@ -51,7 +48,7 @@ end
 outstruct = struct;
 sumfit_vec = zeros(1,length(ng_param_list));
 fprintf('Initializing preloaded gene indices\n')
-if (length(ng_param_list) > 5 || strcmp(costfun,'SVM')) && strcmp(method,'MRx3') % heuristic criterion
+if (length(ng_param_list) > 5 || strcamp(costfun,'SVM')) && strcmp(method,'MRx3') % heuristic criterion
     preloadinds = MRx3_Selector(genevct,voxvgene,length(gene_names),lambda);
 else
     preloadinds = [];
@@ -65,7 +62,7 @@ for i = 1:length(ng_param_list)
     if strcmp(costfun,'SumFit')
         [E_red,C_red,nGen] = GeneSelector(genevct,voxvgene,gene_names,param,lambda,method,preloadinds);
     else
-        [E_red,C_red,nGen,~,C_ind_red] = GeneSelector_IndivCells(genevct,voxvgene,C_indivcells,gene_names,param,lambda,method,preloadinds);
+        [E_red,C_red,nGen,~,C_indivcells,ct_labvec] = GeneSelector_IndivCells(genevct,voxvgene,gene_names,param,lambda,method,preloadinds);
     end
     
     % Infer cell density per voxel in arbitrary units
@@ -78,16 +75,16 @@ for i = 1:length(ng_param_list)
     end
 
     % Convert arbitrary densities to counts per voxel
-    Bcorrected = Density_to_Counts(B,matdir);
+    Bcorrected = Density_to_Counts(B);
     outstruct(i).corrB = Bcorrected;
 
     % Sum and average over CCF regions
-    [sumB,meanB] = Voxel_To_Region(Bcorrected,matdir);
+    [sumB,meanB] = Voxel_To_Region(Bcorrected);
     outstruct(i).Bsums = sumB; % total cells per region
     outstruct(i).Bmeans = meanB; % mean cell count per region
 
     % Calculate Pearson and Lin R
-    [LinRstruct,PearsonStruct] = CorrelationsCalc(outstruct,i,matdir);
+    [LinRstruct,PearsonStruct] = CorrelationsCalc(outstruct,i);
     outstruct(i).LinR = LinRstruct;
     outstruct(i).Pearson = PearsonStruct;
     LinRnames = fieldnames(LinRstruct);
@@ -111,10 +108,7 @@ for i = 1:length(ng_param_list)
 
     % Calculate adjusted Kendall's tau for layer-type glutamatergic neurons
     fprintf('Calculating tau, nG parameter value %d/%d\n',i,length(ng_param_list))
-    ranks = [1 2 3 3 4 4 4];
-    cell_inds = 9:15;
-    cell_names = {'L2n3','L4','L5IT','L5PT','L6CT','L6IT','L6b'};
-    taustruct = TauCalc(outstruct,i,cell_names,cell_inds,ranks,matdir);
+    taustruct = TauCalc(outstruct,i);
 
     % Calculate SumFit criterion
     fprintf('Calculating sum fit, nG parameter value %d/%d\n',i,length(ng_param_list))
@@ -125,7 +119,7 @@ for i = 1:length(ng_param_list)
     % Calculate classification error (SVM only)
     if strcmp(costfun,'SVM')
         fprintf('Determining SVM classification error, nG parameter value %d/%d\n',i,length(ng_param_list))
-        x = (C_ind_red - mean(C_ind_red, 1) ./ std(C_ind_red, 1))';
+        x = (C_indivcells - mean(C_indivcells, 1) ./ std(C_indivcells, 1))';
         y = ct_labvec.';
         options = statset('UseParallel',true);
         Mdl = fitcecoc(x,y,'Options',options);
