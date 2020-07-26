@@ -38,11 +38,11 @@ function [E_red,C_red,nGen,reduced_gene_names,C_ind_red] = GeneSelector_IndivCel
 
 % Default option is MRx3 with lambda = 150
 
-if nargin < 7
+if nargin < 8
     preloadinds = [];
-    if nargin < 6
+    if nargin < 7
         method = 'MRx3';
-        if nargin < 5
+        if nargin < 6
             lambda = 150;
         end
     end

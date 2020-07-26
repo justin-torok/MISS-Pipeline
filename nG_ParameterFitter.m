@@ -48,11 +48,14 @@ if nargin < 11
         end
     end
 end
+
 outstruct = struct;
 sumfit_vec = zeros(1,length(ng_param_list));
+error_vec = sumfit_vec;
+
 fprintf('Initializing preloaded gene indices\n')
-if (length(ng_param_list) > 5 || strcmp(costfun,'SVM')) && strcmp(method,'MRx3') % heuristic criterion
-    preloadinds = MRx3_Selector(genevct,voxvgene,length(gene_names),lambda);
+if length(ng_param_list) > 5 && strcmp(method,'MRx3') % heuristic criterion
+    preloadinds = MRx3_Selector(genevct,voxvgene,max(ng_param_list),lambda);
 else
     preloadinds = [];
 end
@@ -125,14 +128,18 @@ for i = 1:length(ng_param_list)
     % Calculate classification error (SVM only)
     if strcmp(costfun,'SVM')
         fprintf('Determining SVM classification error, nG parameter value %d/%d\n',i,length(ng_param_list))
+        tic
         x = (C_ind_red - mean(C_ind_red, 1) ./ std(C_ind_red, 1))';
         y = ct_labvec.';
-        options = statset('UseParallel',true);
-        Mdl = fitcecoc(x,y,'Options',options);
-        rng(1); % set seed
+%         parpool(3);
+        options = [];
+%         options = statset('UseParallel',true); 
+        Mdl = fitcecoc(x,y,'Learners','svm', 'Options',options);
+        rng(0); % set seed
         CVMdl = crossval(Mdl, 'Options', options, 'Kfold', k);
         error_vec(i) = kfoldLoss(CVMdl, 'Options', options);
         outstruct(i).error = error_vec(i);
+        toc
     end
     fprintf('Done, nG parameter value %d/%d\n',i,length(ng_param_list))
 end
