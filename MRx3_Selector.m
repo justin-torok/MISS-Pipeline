@@ -48,7 +48,7 @@ T_g = C_genenorm(remaininds,:);
 
 % mRMR Propagation/Termination
 while length(geneinds) < n
-%     fprintf('gene %d/%d\n', length(geneinds)+1,n)
+    fprintf('gene %d/%d\n', length(geneinds)+1,n)
     szT = size(T_ct,1);
     Vtest = zeros(1,szT);
     Fcalcvec = Vtest; wcalc = Vtest; errvec = Vtest;

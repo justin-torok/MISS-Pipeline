@@ -88,13 +88,15 @@ for i = 1:length(ng_param_list_)
     fprintf('Determining SVM classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
     x = (C_ind_red - mean(C_ind_red, 1) ./ std(C_ind_red, 1))';
     y = ct_labvec_.';
+    parpool(4);
 %     options = [];
     options = statset('UseParallel',true); 
-    Mdl = fitcecoc(x,y,'Learners','svm', 'Options',options);
+    Mdl = fitcecoc(x,y,'Learners','svm','Verbose',2,'Options',options);
     rng(0); % set seed
     CVMdl = crossval(Mdl, 'Options', options, 'Kfold', k_);
     error_vec(i) = kfoldLoss(CVMdl, 'Options', options);
     outstruct(i).error = error_vec(i);
+    delete(gcp('nocreate'));
     toc
     fprintf('Done, nG parameter value %d/%d\n',i,length(ng_param_list_))
 end
