@@ -51,7 +51,7 @@ for i = 1:length(lambda_param_list)
         if strcmp(costfun,'SumFit')
             cost_mat(j,i) = -outstruct(j).sumfit;
         else
-            cost_mat(j,i) = outstruct(j).error;
+            cost_mat(j,i) = mean(outstruct(j).error);
         end
     end
     fprintf('Done, lambda value %d/%d\n',i,length(lambda_param_list))

@@ -6,7 +6,7 @@
 % inputs to many of the figure generation functions.
 
 %% Grouping raw exon and intron counts into a hierarchical data struct per AIBS scRNAseq cell type labels
-matdir = '/media/rajlab/sachin_data_1/userdata/justin/MISS'; % indicate folder where mat files are located
+matdir = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; % indicate folder where mat files are located
 % classstruct = scRNAseq_Data_Extract(matdir);
 
 %% Generating the mean scRNAseq expression per cell type for consensus genes
@@ -23,17 +23,14 @@ regvgene = ISH_Data_Extract_Zeisel(matdir);
 load([matdir filesep 'Zeisel_extract.mat'],'C_indivcells','classkey','ct_labvec','entrez_names','meanexprmat');
 % clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells matdir
 method = 'MRx3';
-% k = 4;
+k = 5;
 testlambda = 150;
-% testnG = [50:50:300,325:25:800];
-% testnG = [50:50:100];
-genevct = meanexprmat.'; C_indivcells = C_indivcells.';
-mrx3_inds_zeisel_150 = MRx3_Selector(genevct,regvgene,size(genevct,1),testlambda);
-mrx3_genenames_zeisel_150 = entrez_names(mrx3_inds_zeisel_150);
+testnG = [100:50:200];
+genevct = meanexprmat.'; C_indivcells = C_indivcells.'; ct_labvec = ct_labvec.';
+sig = 4400;
 % parpool(4);
-% [outstruct,idx] = nG_ParameterFitter_Zeisel(regvgene, genevct, entrez_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, matdir);
+[fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, entrez_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
 % delete(gcp('nocreate'))
-save([matdir filesep 'mrx3_genes_zeisel.mat'], 'mrx3_inds_zeisel_150','mrx3_genenames_zeisel_150');
 % Saved in MISS_demo_output.mat with preset parameter values above
 
 %% A sampling of results from the MISS manuscript
