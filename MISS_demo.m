@@ -24,12 +24,12 @@ clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells ma
 method = 'MRx3';
 % testnG = [50:50:450,460:10:1600,1650:50:2500,2600:100:3700,3855];
 % testnG = [50:50:300,301:600,610:10:1200];
-testnG = [100,200];
+testnG = [120:100:820];
 % testnG = [369,383,391,425];
 % costfun = 'SumFit';
 k = 5;
 testlambda = 150;
-sig = 4400;
+sig = [3800,4400,5000];
 [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
 
 

@@ -1,4 +1,4 @@
-function [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(voxvgene_, genevct_, gene_names_, method_, ng_param_list_, lambda_, k_, C_indivcells_, ct_labvec_, sigma_, matdir_)
+function [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(voxvgene_, genevct_, gene_names_, method_, ng_param_list_, lambda_, k_, C_indivcells_, ct_labvec_, sigmas_, matdir_)
 % This function performs a brute-force parameter sweep to find the maximal
 % performance of a given subset selection method. The user MUST supply
 % voxvgene and genevct, which are outputs of ProcessedData_Generator.m, and
@@ -17,7 +17,7 @@ function [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(voxvgene_, genevct_,
 if nargin < 11
     matdir_ = cd;
     if nargin < 10
-        sigma_ = 4400;
+        sigmas_ = 4400;
         if nargin < 9
             ct_labvec_ = [];
             if nargin < 8
@@ -70,49 +70,54 @@ for i = 1:length(ng_param_list_)
     tic
     fprintf('Determining GMM classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
     savegroups = 1;
-    crossval_ = 1;
+    crossval_ = 0;
     gmmstruct = GMM_Nearest_Neighbor_Posterior(C_ind_red, ct_labvec_, k_, crossval_, savegroups);
     fitstruct(i).gmmstruct = gmmstruct;
     fitstruct(i).lambda = lambda_;
     fitstruct(i).crossval = crossval_;
     fitstruct(i).nGen = nGen;
+    fitstruct(i).sigmas = sigmas_;
     toc
     fprintf('Done, GMM fitting, nG parameter value %d/%d\n',i,length(ng_param_list_))
 end
 
 % Elbow determination for nG range supplied
 fprintf('Determining optimal nG value\n');
-neglogpriors = zeros(1,length(fitstruct));
+neglogpriors = zeros(length(fitstruct),length(sigmas_));
 negloglikelihoods = neglogpriors;
 for i = 1:length(fitstruct)
-    negloglikelihoods(i) = -(fitstruct(i).gmmstruct.likelihood^2);
-    neglogpriors(i) = (ng_param_list_(i)^2)/(2*sigma_^2);
-    fitstruct(i).negloglikelihood = negloglikelihoods(i);
-    fitstruct(i).neglogprior = neglogpriors(i);
+    for j = 1:length(sigmas_)
+        negloglikelihoods(i,j) = -(fitstruct(i).gmmstruct.gmmpost^2);
+        neglogpriors(i,j) = (ng_param_list_(i)^2)/(2*sigmas_(j)^2);
+    end
+    fitstruct(i).negloglikelihood = negloglikelihoods(i,1);
+    fitstruct(i).neglogpriors = neglogpriors(i,:);
 end
 
 neglogposteriors = negloglikelihoods + neglogpriors;
-[~,minind] = min(neglogposteriors);
-nG_opt = ng_param_list_(minind);
-outstruct.nGen = nG_opt;
+[~,mininds] = min(neglogposteriors);
+nG_opts = ng_param_list_(mininds);
 
-% Infer cell density per voxel in arbitrary units
-tic
-fprintf('Nonnegative matrix inversion, optimal nG parameter value\n')
-[E_red,C_red] = GeneSelector(genevct_,voxvgene_,gene_names_,nG_opt,lambda_,method_,preloadinds);
-B = CellDensityInference(E_red,C_red);
-toc
-%     outstruct(i).Bvals = B; 
-if strcmp(method_,'MRx3')
-    outstruct.lambda = lambda_;
+for i = 1:length(nG_opts)
+    outstruct(i).nGen = nG_opts(i);
+    % Infer cell density per voxel in arbitrary units
+    tic
+    fprintf('Nonnegative matrix inversion, optimal nG parameter value %d/%d\n',i,length(nG_opts))
+    [E_red,C_red] = GeneSelector(genevct_,voxvgene_,gene_names_,nG_opts(i),lambda_,method_,preloadinds);
+    B = CellDensityInference(E_red,C_red);
+    toc
+    %     outstruct(i).Bvals = B; 
+    if strcmp(method_,'MRx3')
+        outstruct(i).lambda = lambda_;
+    end
+
+    % Convert arbitrary densities to counts per voxel
+    Bcorrected = Density_to_Counts(B,matdir_);
+    outstruct(i).corrB = Bcorrected;
+
+    % Sum and average over CCF regions
+    [sumB,meanB] = Voxel_To_Region(Bcorrected,matdir_);
+    outstruct(i).Bsums = sumB; % total cells per region
+    outstruct(i).Bmeans = meanB; % mean cell count per region
 end
-
-% Convert arbitrary densities to counts per voxel
-Bcorrected = Density_to_Counts(B,matdir_);
-outstruct.corrB = Bcorrected;
-
-% Sum and average over CCF regions
-[sumB,meanB] = Voxel_To_Region(Bcorrected,matdir_);
-outstruct.Bsums = sumB; % total cells per region
-outstruct.Bmeans = meanB; % mean cell count per region
 end

@@ -58,8 +58,8 @@ if crossval_ == 1
     gmmstruct.error = mean(error);
     gmmstruct.accuracy = mean(accuracy);
     gmmstruct.std_accuracy = std(accuracy);
-    gmmstruct.likelihood = mean(postprob);
-    gmmstruct.std_likelihood = std(postprob);
+    gmmstruct.gmmpost = mean(postprob);
+    gmmstruct.std_gmmpost = std(postprob);
     gmmstruct.testgroups = group_mat;
     gmmstruct.truthgroups = test_mat;
 else
@@ -70,7 +70,7 @@ else
     C_traincells = [];
     for n = 1:nts
         curcellinds = find(ct_labvec==n);
-        testinds = randi(length(curcellinds),1,ceil(length(curcellinds)/k));
+        testinds = randi(length(curcellinds),1,ceil(length(curcellinds)/k_));
         traininds = curcellinds;
         traininds(testinds) = [];
         centroids(:,n) = mean(C_ind_red(:,traininds),2);
@@ -101,7 +101,7 @@ else
     error = 1 - accuracy;
     gmmstruct.error = mean(error);
     gmmstruct.accuracy = mean(accuracy);
-    gmmstruct.likelihood = mean(post_probs);
+    gmmstruct.gmmpost = mean(post_probs);
     gmmstruct.testgroups = group_mat;
     gmmstruct.truthgroups = test_mat;
 end

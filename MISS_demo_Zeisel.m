@@ -6,7 +6,7 @@
 % inputs to many of the figure generation functions.
 
 %% Grouping raw exon and intron counts into a hierarchical data struct per AIBS scRNAseq cell type labels
-matdir = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; % indicate folder where mat files are located
+matdir = '/wynton/home/rajlab/jtorok/MATLAB/MatFiles/MISS'; % indicate folder where mat files are located
 % classstruct = scRNAseq_Data_Extract(matdir);
 
 %% Generating the mean scRNAseq expression per cell type for consensus genes
@@ -27,7 +27,7 @@ k = 5;
 testlambda = 150;
 testnG = [100:50:200];
 genevct = meanexprmat.'; C_indivcells = C_indivcells.'; ct_labvec = ct_labvec.';
-sig = 4400;
+sig = [3300,4400];
 % parpool(4);
 [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, entrez_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
 % delete(gcp('nocreate'))
