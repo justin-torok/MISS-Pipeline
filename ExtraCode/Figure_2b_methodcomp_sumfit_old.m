@@ -1,4 +1,4 @@
-function Figure_2b_methodcomp_sumfit(savenclose, directory)
+function Figure_2b_methodcomp_sumfit_old(savenclose, directory)
 
 if nargin < 2
     directory = [cd filesep 'MatFiles'];

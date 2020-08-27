@@ -1,0 +1,16 @@
+% [x,y] = meshgrid(lambdas,sigmas);
+% x = x.'; y = y.';
+% figure; hold on;
+% s = scatter3(x(:),y(:),sumfitmat(:)); view(3);
+minmaxer = @(n)((n-min(n(:)))/(max(n(:)) - min(n(:))));
+sumfitmat_norm = minmaxer(sumfitmat);
+figure;
+imagesc(sumfitmat); colormap redblue; colorbar;
+% s.EdgeColor = 'none';
+% view(3);
+% zlabel('\Sigma_{fit}');
+ylabel('\lambda'); xlabel('\sigma');
+yticklabels(num2cell(lambdas)); xticklabels(num2cell(sigmas([1:20:121]))); xticks(1:20:121);
+xtickangle(45);
+title('Hyperparameter Optimization');
+set(gca,'FontSize',20);

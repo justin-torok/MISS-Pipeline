@@ -1,21 +1,29 @@
-function Cell_Type_Brainframe(outstruct,idx,typeinds,savenclose,view_,directory)
-if nargin < 6
+function Cell_Type_Brainframe(outstruct,idx,typeinds,savenclose,view_,study,directory)
+if nargin < 7
     directory = [cd filesep 'MatFiles'];
-    if nargin < 5
-        view_ = [];
-        if nargin < 4
-            savenclose = 0;
+    if nargin < 6
+        study = 'tasic';
+        if nargin < 5
+            view_ = [];
+            if nargin < 4
+                savenclose = 0;
+            end
         end
     end
 end
 load([directory filesep 'PresetInputs.mat'],'GENGDmod','structList',...
-    'structIndex','nonzerovox','classkey');
+        'structIndex','nonzerovox');
+if strcmp(study,'zeisel')
+    load([directory filesep 'Zeisel_extract.mat'],'classkey');
+elseif strcmp(study,'tasic')
+    load([directory filesep 'PresetInputs.mat'],'classkey');
+end
 load([directory filesep 'input_struct_voxelrender'],'input_struct');
 
 input_struct.savenclose = savenclose;
 
 for j = 1:length(typeinds)
-    testvals = outstruct(idx).Bvals(:,typeinds(j));
+    testvals = outstruct(idx).corrB(:,typeinds(j));
     datamap = zeros(size(GENGDmod));
     for i = 1:length(structList)
         [~,voxinds] = ismember(structIndex{i},nonzerovox);

@@ -1,7 +1,4 @@
-function [outstruct, optind] = nG_ParameterFitter(voxvgene_, genevct_,...
-                                    gene_names_, method_, ng_param_list_,...
-                                    lambda_, costfun_, k_, C_indivcells_,...
-                                    ct_labvec_, matdir_)
+function [fitstruct, outstruct] = nG_ParameterFitter(voxvgene_, genevct_, gene_names_, method_, ng_param_list_, lambda_, k_, C_indivcells_, ct_labvec_, sigmas_, matdir_)
 % This function performs a brute-force parameter sweep to find the maximal
 % performance of a given subset selection method. The user MUST supply
 % voxvgene and genevct, which are outputs of ProcessedData_Generator.m, and
@@ -20,13 +17,13 @@ function [outstruct, optind] = nG_ParameterFitter(voxvgene_, genevct_,...
 if nargin < 11
     matdir_ = cd;
     if nargin < 10
-        ct_labvec_ = [];
+        sigmas_ = 4400;
         if nargin < 9
-            C_indivcells_ = [];
+            ct_labvec_ = [];
             if nargin < 8
-                k_ = 4;
+                C_indivcells_ = [];
                 if nargin < 7
-                    costfun_ = 'SumFit';
+                    k_ = 4;
                     if nargin < 6
                         lambda_ = 150;
                         if nargin < 5
@@ -52,38 +49,68 @@ if nargin < 11
     end
 end
 
+fitstruct = struct;
 outstruct = struct;
-sumfit_vec = zeros(1,length(ng_param_list_));
-error_vec = sumfit_vec;
 
 fprintf('Initializing preloaded gene indices\n')
-tic
-if length(ng_param_list_) > 5 && strcmp(method_,'MRx3') % heuristic criterion
+if strcmp(method_,'MRx3')
     preloadinds = MRx3_Selector(genevct_,voxvgene_,max(ng_param_list_),lambda_);
 else
     preloadinds = [];
 end
-toc
 
 for i = 1:length(ng_param_list_)
     fprintf('Determining subset, nG parameter value %d/%d\n',i,length(ng_param_list_))
     param = ng_param_list_(i);
     % Create reduced versions of voxvgene and genevct according to the
     % method and parameter specified by the user
+    [~,~,nGen,~,C_ind_red] = GeneSelector_IndivCells(genevct_,voxvgene_,C_indivcells_,gene_names_,param,lambda_,method_,preloadinds);
+    
+    % Calculate classification error
     tic
-    if strcmp(costfun_,'SumFit')
-        [E_red,C_red,nGen] = GeneSelector(genevct_,voxvgene_,gene_names_,param,lambda_,method_,preloadinds);
-    else
-        [E_red,C_red,nGen,~,C_ind_red] = GeneSelector_IndivCells(genevct_,voxvgene_,C_indivcells_,gene_names_,param,lambda_,method_,preloadinds);
-    end
+    fprintf('Determining GMM classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
+    savegroups = 1;
+    crossval_ = 1;
+    gmmstruct = GMM_Nearest_Neighbor_Posterior(C_ind_red, ct_labvec_, k_, crossval_, savegroups);
+    fitstruct(i).gmmstruct = gmmstruct;
+    fitstruct(i).lambda = lambda_;
+    fitstruct(i).crossval = crossval_;
+    fitstruct(i).nGen = nGen;
+    fitstruct(i).sigmas = sigmas_;
     toc
+    fprintf('Done, GMM fitting, nG parameter value %d/%d\n',i,length(ng_param_list_))
+end
+
+% Elbow determination for nG range supplied
+fprintf('Determining optimal nG value\n');
+neglogpriors = zeros(length(fitstruct),length(sigmas_));
+negloglikelihoods = neglogpriors;
+for i = 1:length(fitstruct)
+    ng_param = fitstruct(i).nGen;
+    for j = 1:length(sigmas_)
+        negloglikelihoods(i,j) = -(fitstruct(i).gmmstruct.gmmpost^2);
+        neglogpriors(i,j) = (ng_param^2)/(2*sigmas_(j)^2);
+    end
+    fitstruct(i).negloglikelihood = negloglikelihoods(i,1);
+    fitstruct(i).neglogpriors = neglogpriors(i,:);
+end
+
+neglogposteriors = negloglikelihoods + neglogpriors;
+[~,mininds] = min(neglogposteriors);
+nG_opts = zeros(1,length(mininds));
+for i = 1:length(mininds)
+    nG_opts(i) = fitstruct(i).nGen;
+end
+
+for i = 1:length(nG_opts)
+    outstruct(i).nGen = nG_opts(i);
     % Infer cell density per voxel in arbitrary units
-    fprintf('Nonnegative matrix inversion, nG parameter value %d/%d\n',i,length(ng_param_list_))
     tic
+    fprintf('Nonnegative matrix inversion, optimal nG parameter value %d/%d\n',i,length(nG_opts))
+    [E_red,C_red] = GeneSelector(genevct_,voxvgene_,gene_names_,nG_opts(i),lambda_,method_,preloadinds);
     B = CellDensityInference(E_red,C_red);
     toc
-    outstruct(i).Bvals = B; 
-    outstruct(i).nGen = nGen;
+    %     outstruct(i).Bvals = B; 
     if strcmp(method_,'MRx3')
         outstruct(i).lambda = lambda_;
     end
@@ -96,74 +123,5 @@ for i = 1:length(ng_param_list_)
     [sumB,meanB] = Voxel_To_Region(Bcorrected,matdir_);
     outstruct(i).Bsums = sumB; % total cells per region
     outstruct(i).Bmeans = meanB; % mean cell count per region
-
-    % Calculate Pearson and Lin R
-    [LinRstruct,PearsonStruct] = CorrelationsCalc(outstruct,i,matdir_);
-    outstruct(i).LinR = LinRstruct;
-    outstruct(i).Pearson = PearsonStruct;
-    LinRnames = fieldnames(LinRstruct);
-    Pnames = fieldnames(PearsonStruct);
-    for j = 1:length(LinRnames)
-        curparam_LinR(j,:) = LinRstruct.(LinRnames{j});
-        curparam_Rval(j,:) = PearsonStruct.(Pnames{j});
-    end
-    LinR_pv(i,:) = curparam_LinR(1,:);
-    LinR_sst(i,:) = curparam_LinR(2,:);
-    LinR_vip(i,:) = curparam_LinR(3,:);
-    LinR_all(i,:) = curparam_LinR(4,:);
-    LinR_micro(i,:) = curparam_LinR(5,:);
-    LinR_neuron(i,:) = curparam_LinR(6,:);
-    Rval_pv(i,:) = curparam_Rval(1,:);
-    Rval_sst(i,:) = curparam_Rval(2,:);
-    Rval_vip(i,:) = curparam_Rval(3,:);
-    Rval_all(i,:) = curparam_Rval(4,:);
-    Rval_micro(i,:) = curparam_Rval(5,:);
-    Rval_neuron(i,:) = curparam_Rval(6,:);
-
-    % Calculate adjusted Kendall's tau for layer-type glutamatergic neurons
-    fprintf('Calculating tau, nG parameter value %d/%d\n',i,length(ng_param_list_))
-    ranks = [1 2 3 3 4 4 4];
-    cell_inds = 9:15;
-    cell_names = {'L2n3','L4','L5IT','L5PT','L6CT','L6IT','L6b'};
-    taustruct = TauCalc(outstruct,i,cell_names,cell_inds,ranks,matdir_);
-    outstruct(i).tau = taustruct.tau;
-
-    % Calculate SumFit criterion
-    fprintf('Calculating sum fit, nG parameter value %d/%d\n',i,length(ng_param_list_))
-    sumfit = taustruct.tau + LinR_pv(i,3) + LinR_sst(i,3) + LinR_vip(i,3) + LinR_micro(i,3);
-    sumfit_vec(i) = sumfit;
-    outstruct(i).sumfit = sumfit;
-    
-    % Calculate classification error (SVM only)
-    if strcmp(costfun_,'SVM')
-        fprintf('Determining SVM classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
-        tic
-        ngroups = 1;
-        options = statset('UseParallel',true); 
-        errors = SVM_Classification_MISS(C_ind_red,ct_labvec_,k_,options,ngroups);
-        outstruct(i).error = errors;
-        toc
-    elseif strcmp(costfun_,'LDA')
-        fprintf('Determining LDA classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
-        tic
-        ngroups = k_;
-        options = statset('UseParallel',true); 
-        [errors,meanposts] = LDA_Classification_MISS(C_ind_red,ct_labvec_,options,ngroups);
-        outstruct(i).error = errors;
-        outstruct(i).posterior = meanposts;
-        toc        
-    end
-    fprintf('Done, nG parameter value %d/%d\n',i,length(ng_param_list_))
-end
-
-fprintf('Determining optimal nG value\n');
-if strcmp(costfun_,'SumFit')
-    [~,optind] = max(sumfit_vec);
-else
-    nG_max = length(gene_names_);
-    nG_rescaled  = (ng_param_list_ - min(ng_param_list_))/(nG_max - min(ng_param_list_));
-    error_rescaled = (error_vec - min(error_vec))/max(error_vec - min(error_vec));
-    sqdist = nG_rescaled.^2 + error_rescaled.^2;
-    [~,optind] = min(sqdist);
 end
 end

@@ -6,7 +6,7 @@
 % inputs to many of the figure generation functions.
 
 %% Grouping raw exon and intron counts into a hierarchical data struct per AIBS scRNAseq cell type labels
-matdir = '/wynton/home/rajlab/jtorok/MATLAB/MatFiles/MISS'; % indicate folder where mat files are located
+matdir = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; % indicate folder where mat files are located
 % classstruct = scRNAseq_Data_Extract(matdir);
 
 %% Generating the mean scRNAseq expression per cell type for consensus genes
@@ -24,14 +24,16 @@ load([matdir filesep 'Zeisel_extract.mat'],'C_indivcells','classkey','ct_labvec'
 % clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells matdir
 method = 'MRx3';
 k = 5;
-testlambda = 150;
-testnG = [100:50:200];
+testlambda = 250;
+testnG = 1168;
 genevct = meanexprmat.'; C_indivcells = C_indivcells.'; ct_labvec = ct_labvec.';
-sig = [3300,4400];
+sig = 4400;
+% [~,~,~,~,mrx3inds] = GeneSelector(genevct,regvgene,entrez_names,3803,testlambda,method);
 % parpool(4);
 [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, entrez_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
 % delete(gcp('nocreate'))
 % Saved in MISS_demo_output.mat with preset parameter values above
+save([matdir filesep 'tasic_colAMD.mat'],'outstruct','fitstruct');
 
 %% A sampling of results from the MISS manuscript
 % directory = [cd filesep 'MatFiles' filesep 'MISS'];

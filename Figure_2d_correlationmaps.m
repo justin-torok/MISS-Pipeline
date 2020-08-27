@@ -1,23 +1,35 @@
-function Figure_2d_correlationmaps(typeinds,method,ngen_param,lambda,slicelocs,savenclose,directory)
+function Figure_2d_correlationmaps(typeinds,method,ngen_param,lambda,slicelocs,savenclose,study,directory)
 
 % 1. Load raw data and dependencies for mapping; define defaults; create
 % E_red, C_red
-if nargin < 7
+if nargin < 8
     directory = [cd filesep 'MatFiles'];
-    if nargin < 6
-        savenclose = 0;
-        if nargin < 5
-            slicelocs = [25,30,47];
-            if nargin < 4
-                lambda = 150;
+    if nargin < 7
+        study = 'tasic';
+        if nargin < 6
+            savenclose = 0;
+            if nargin < 5
+                slicelocs = [25,30,47];
+                if nargin < 4
+                    lambda = 150;
+                end
             end
         end
     end
 end
-load([directory filesep 'PresetInputs.mat'],'meanexprmat','regvgene',...
-    'entrez_names','classkey','GENGDmod','nonzerovox');
-[E,C] = GeneSelector(meanexprmat,regvgene,entrez_names,ngen_param,lambda,method);
-typenames = classkey(typeinds);
+if strcmp(study,'tasic')
+    load([directory filesep 'PresetInputs.mat'],'meanexprmat','regvgene',...
+        'entrez_names','classkey','GENGDmod','nonzerovox');
+    [E,C] = GeneSelector(meanexprmat,regvgene,entrez_names,ngen_param,lambda,method);
+    typenames = classkey(typeinds);
+elseif strcmp(study,'zeisel')
+    load([directory filesep 'Zeisel_extract.mat'],'meanexprmat','entrez_names','classkey');
+    regvgene = ISH_Data_Extract_Zeisel(directory);
+    meanexprmat = meanexprmat.';
+    [E,C] = GeneSelector(meanexprmat,regvgene,entrez_names,ngen_param,lambda,method);
+    typenames = classkey(typeinds);
+    load([directory filesep 'PresetInputs.mat'],'GENGDmod','nonzerovox');
+end
 
 % 2. Renormalize the ISH data according to Zeisel et al, 2018
 % This does not include a pre-filtering step; we assume that our MRx3

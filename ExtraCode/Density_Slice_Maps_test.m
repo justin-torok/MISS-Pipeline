@@ -1,4 +1,4 @@
-function Density_Slice_Maps(outstruct,idx,typeinds,slicelocs,savenclose,study,directory)
+function Density_Slice_Maps_test(outstruct,idx,typeinds,slicelocs,savenclose,study,directory)
 
 % 1. Load raw data and dependencies for mapping; define defaults
 if nargin < 7
@@ -19,6 +19,7 @@ elseif strcmp(study,'zeisel')
     load([directory filesep 'PresetInputs.mat'],'GENGDmod','nonzerovox');
     load([directory filesep 'Zeisel_extract.mat'],'classkey');
 end
+load([directory filesep 'input_struct_voxelrender.mat'],'input_struct');
 typenames = classkey(typeinds);
 
 % 2. Define densities
@@ -26,40 +27,48 @@ D = outstruct(idx).corrB;
 
 % 3. Map the results
 
-maplocs = slicelocs;
-newVoxMap = zeros(size(GENGDmod));
-newVoxMap(nonzerovox) = 1;
+maplocs = slicelocs*2 - 1;
+newVoxMap = input_struct.brain_atlas;
+newVoxMap = double(logical(newVoxMap));
+% newVoxMap = zeros(size(GENGDmod));
+% newVoxMap(nonzerovox) = 1;
 
 for k = 1:length(typeinds)
     curmap = zeros(size(GENGDmod));
     curmap(nonzerovox) = D(:,typeinds(k));
+    curmap = imresize3(curmap,[133 81 115]);
+    curmap(curmap<0) = 0;
+
+    curmax = max(max(max(curmap)));
     for j = 1:length(maplocs)
         curloc = maplocs(j);
         slice_raw = squeeze(curmap(curloc,:,:));
         im = slice_raw;
-        se = strel('diamond',1);
+        se = offsetstrel('ball',3,1,4);
+%         se = strel('sphere',2);
         im = imdilate(im, se);
         im = imerode(im, se);
-        bim = double(logical(im));
-        im = interpn(im,2,'linear');
-        bim = interpn(bim,2,'linear');
-        bim(bim < 0.67) = 0;
-        bim(bim >= 0.67) = 1;
-        slice_final = im .* bim;
-        curmax = max(max(slice_final));
+%         bim = double(logical(im));
+        im = interpn(im,1,'spline');
+%         bim = interpn(bim,3,'spline');
+%         bim(bim < 0.67) = 0;
+%         bim(bim >= 0.67) = 1;
+%         slice_final = im .* bim;
+% %         curmax = max(max(slice_final));
         bw = squeeze(newVoxMap(curloc,:,:));
         im_ = imdilate(bw, se);
         im_ = imerode(im_, se);
-        bim_ = interpn(im_,2,'linear');
-        bim_(bim_ < 0.67) = 0;
-        bim_(bim_ >= 0.67) = 1;
-        biminds = logical(bim_(:));
-        slice_final(biminds) = slice_final(biminds) + curmax/30;
+        bim_ = interpn(im_,1,'spline');
+        bim_(bim_ < 0.5) = 0;
+        bim_(bim_ >= 0.5) = 1;
+%         biminds = logical(bim(:));
+        slice_final = im .* bim_;
+%         slice_final(biminds) = slice_final(biminds) + curmax/30;
         bwbounds = bwboundaries(bim_);
         
         f1 = figure;
         set(f1,'Position',[0 0 600 500]); %this to set the size
-        imagesc(slice_final,[0 0.5*curmax]); hold on;
+        imagesc(slice_final,[0 0.5*curmax+eps]); hold on;
         colormap(flipud(pink)); hold on;
         for m = 1:length(bwbounds)
             boundary = bwbounds{m};

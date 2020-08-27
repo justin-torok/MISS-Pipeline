@@ -1,4 +1,4 @@
-function [E_red,C_red,nGen,reduced_gene_names] = GeneSelector(genevct,voxvgene,gene_names,ngen_param,lambda,method,preloadinds)
+function [E_red,C_red,nGen,reduced_gene_names,mrmrinds] = GeneSelector(genevct,voxvgene,gene_names,ngen_param,lambda,method,preloadinds)
 % Function that performs various types of subset selection implemented in
 % Mezias et al, 2020, including the ideal method MRx3. The user MUST supply
 % the following inputs:
@@ -67,8 +67,8 @@ if isempty(preloadinds)
     if strcmp(method,'MRx3')
         mrmr_n = ngen_param;
         mrmrinds = MRx3_Selector(genevct,voxvgene,mrmr_n,lambda);
-        mrmrinds = sort(mrmrinds);
-        reduced_gene_names = gene_names(mrmrinds);
+%         mrmrinds = sort(mrmrinds);
+        reduced_gene_names = gene_names(sort(mrmrinds));
     elseif strcmp(method,'mRMR')
        mrmr_n = ngen_param;
        mrmrinds = mRMR_Selector(ctnorm,mrmr_n,'Quo');

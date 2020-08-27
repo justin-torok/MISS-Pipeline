@@ -3,7 +3,7 @@ mats2load = {'lambda0_gmm_cv5.mat','lambda50_gmm_cv5.mat',...
     'lambda100_gmm_cv5.mat','lambda150_gmm_cv5.mat',...
     'lambda200_gmm_cv5.mat','lambda250_gmm_cv5.mat',...
     'lambda300_gmm_cv5.mat','lambda350_gmm_cv5.mat'};
-sigmas = [4100,4200,4400,4500];
+sigmas = [4000,4100,4200,4300,4400,4500,4600,4700,4800];
 % sigmas = [3855, 5*3855, 10*3855, 15*3855, 20*3855, 25*3855];
 cvs = {'5-Fold CV'};
 
@@ -33,7 +33,7 @@ for j = 1:size(mininds,1)
         mininds(j,k) = minind;
     end
 end
-figure('Units','Inches','Position',[0 0 20 10]);
+figure('Units','Inches','Position',[0 0 25 15]);
 cmap = hsv(length(lambda));
 for k = 1:length(sigmas)
     subplot(sqrt(length(sigmas)),sqrt(length(sigmas)),k);
@@ -50,10 +50,11 @@ for k = 1:length(sigmas)
     for j = 1:length(mats2load)
         templeg{j} = sprintf("-log(Posterior), lambda = %d - Minimum @ nG = %d", lambda(j),ng_param_list(mininds(j,k)));
     end
-    legend(templeg); xlabel('nG'); ylabel('-log(P)');
     title(sprintf(['GMM Posteriors, sigma = %d, ' cvs{1}], sigmas(k)));
+    xlabel('nG'); ylabel('-log(P)');
     ylim([min(min(negloglikelihoods(:,j,:))),max(max(negloglikelihoods(:,j,:)))])
     set(gca,'FontSize',16);
+    legend(templeg,'FontSize',12); 
 end
 
 
