@@ -21,15 +21,14 @@ outdir = '/wynton/home/rajlab/jtorok/MATLAB/MatFiles/OutputFiles';
 
 %% Performing cell type inference and parameter optimization
 load([matdir filesep 'PresetInputs.mat']);
-clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells
-lams = 0:50:350;
+clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells matdir
+testlambda = 300;
 sig = 4400;
 k = 5;
 method = 'MRx3';
 testnG = [50:50:300,301:1200,1255:50:2155,2255:100:3655];
-for i = 1:length(lams)
-    testlambda = lams(i);
-    [fitstruct, outstruct] = nG_ParameterFitter(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
-    save([matdir filesep sprintf('tasic_MRx3_l%d.mat',testlambda)],'outstruct','fitstruct');
-    clear outstruct fitstruct
-end
+[fitstruct, outstruct] = nG_ParameterFitter(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+sigs = 3000:25:6000;
+[sumfits,minngs] = SumFit_Optimizer(fitstruct,method,sigs,matdir);
+save([matdir filesep sprintf('tasic_MRx3_l%d.mat',testlambda)],'outstruct','fitstruct','sumfits','minngs');
+

@@ -1,11 +1,11 @@
 #!/bin/bash
 #$ -cwd
 ##### Specify job name
-#$ -N test_2
+#$ -N test_100
 ##### Output file
-#$ -o testo_2
+#$ -o testo_100
 ##### Error file
-#$ -e teste_2
+#$ -e teste_100
 ##### number of cores
 #$ -pe smp 1
 ##### memory per core
@@ -17,5 +17,5 @@
 
 module load matlab
 
-matlab -nosplash -nodesktop MISS_demo_Zeisel_2.m  
+matlab -nosplash -nodesktop MISS_demo_Tasic_Wynton_100.m  
 
