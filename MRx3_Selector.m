@@ -1,6 +1,13 @@
-function geneinds = MRx3_Selector(C_raw,E,n,lambda)
+function geneinds = MRx3_Selector(C_raw,E,n,lambda,seed,k_g)
 % This function calculates the best n genes (rows) of matrix C according to
 % the MRx3 criterion
+
+if nargin < 6
+    k_g = 10; % number of genes to add at a time (saves computational time)
+    if nargin < 5
+        seed = 30; % size of initialization seed
+    end
+end
 
 % Create a column-normalized (i.e. by cell type) C matrix for the purpose
 % of calculating the approximate F-statistic and pairwise correlations for
@@ -22,7 +29,7 @@ C_genenorm = gnorm;
 
 Fcalc = @(g) sum((g - mean(g)).^2)/(length(g) - 1);
 Rmat = corr(C_cellnorm.');
-k_g = 10; % number of genes to add at a time (saves computational time)
+
 for i = 1:size(E,2)
     curgene = E(:,i);
     cursum = sum(curgene);
@@ -52,7 +59,7 @@ while length(geneinds) < n
     szT = size(T_ct,1);
     Vtest = zeros(1,szT);
     Fcalcvec = Vtest; wcalc = Vtest; errvec = Vtest;
-    if length(geneinds) >= 30
+    if length(geneinds) >= seed
         pinv_S = pinv(S_g);
         E_g = E(geneinds,:);
         D_est = pinv_S * E_g; 
@@ -66,7 +73,7 @@ while length(geneinds) < n
             ind = remaininds(i);
             Rs = abs(Rmat(ind,geneinds));
             wc = sum(Rs)/length(geneinds);
-            if length(geneinds) < 30 % Run normal mRMR for the first 30 genes
+            if length(geneinds) < seed % Run normal mRMR for the first 30 genes
                 Vtest(i) = Fcalc(g_ct) / wc;
             else
                 E_i = E(ind,:);
@@ -78,7 +85,7 @@ while length(geneinds) < n
         end
     end
 
-    if length(geneinds) < 30
+    if length(geneinds) < seed
         [Vm,maxind] = max(Vtest);
         Vmax = [Vmax,Vm];
         geneinds = [geneinds,remaininds(maxind)];

@@ -1,48 +1,49 @@
-function [fitstruct, outstruct] = nG_ParameterFitter(voxvgene_, genevct_, gene_names_, method_, ng_param_list_, lambda_, k_, C_indivcells_, ct_labvec_, sigmas_, matdir_)
-% This function performs a brute-force parameter sweep to find the maximal
-% performance of a given subset selection method. The user MUST supply
-% voxvgene and genevct, which are outputs of ProcessedData_Generator.m, and
-% method, a string identifying a specific subset selection method. The
-% outputs of this function are outstruct, which contains all of the
-% inference and fitting-related information necessary to recreate plots in
-% Mezias et al, 2020, and peakind, which identifies which index of
-% outstruct produced maximal sumfit. 
+function [fitstruct, outstruct] = nG_ParameterFitter(voxvgene_, genevct_,...
+                                    gene_names_, method_, C_indivcells_,...
+                                    ct_labvec_, ng_param_list_, lambda_,...
+                                    sigmas_, k_, crossval_, matdir_)
+% This function performs a brute-force parameter sweep of optionally
+% supplied nG values to find one that produces a minimum loss under a
+% GMM-based nearest centroid classification algorithm, as described in
+% Mezias et al, 2020. The user must supply voxvgene_, genevct_,
+% gene_names_, C_indivcells_, and ct_labvec_, all of which are outputs of
+% upstream preprocessing functions, as well as the method_ character array
+% that indicates which gene subset selection method to use. This function
+% outputs two structs: fitstruct, which contains all of the information
+% required to construct the loss function curves in the manuscript and
+% determine the nG* value for a given lambda and sigma hyperparameter pair,
+% and outstruct, which contains the matrix inversion outputs at nG*.
 %
 % This function calls upon various dependent functions that perform
-% different aspects of the data processing and quantitative assessment. For
-% MRx3, lambda is fit in a separate function (lambda_ParameterFitter.m)
-% that calls upon this function.
+% different aspects of the data processing and quantitative assessment.
 
 % Default nG parameter lists
-if nargin < 11
-    matdir_ = cd;
-    if nargin < 10
-        sigmas_ = 4400;
-        if nargin < 9
-            ct_labvec_ = [];
-            if nargin < 8
-                C_indivcells_ = [];
-                if nargin < 7
-                    k_ = 4;
-                    if nargin < 6
-                        lambda_ = 150;
-                        if nargin < 5
-                            if nargin < 4
-                                error(sprintf('Error. \nUser must supply a voxel x gene matrix, a gene x cell type matrix, a gene names cell array, and a subsetting method'))
-                            end
-                            if ismember(method_, {'MRx3','mRMR','colAMD'})
-                                ng_param_list_ = [100:70:1500, 1750:250:3500, 3855]; 
-                            elseif strcmp(method_, 'DBSCAN')
-                                ng_param_list_ = [0.0001, 0.0004:0.0001:0.001, 0.002:0.001:0.005, 0.015:0.01:0.195]; 
-                            elseif strcmp(method_, 'Entropy')
-                                ng_param_list_ = [0.25,0.5:0.125:2.75,2.8:0.05:3.25];
-                            elseif strcmp(method_, 'Zeisel')
-                                ng_param_list_ = [2:5, 6:2:50]; % made up something here
-                            else
-                                error('Error. \n%s is an incorrect subsetting method identifier',method_)
-                            end
-                        end    
-                    end
+if nargin < 12
+    matdir_ = [cd filesep 'MatFiles'];
+    if nargin < 11
+        crossval_ = 1;
+        if nargin < 10
+            k_ = 5;
+            if nargin < 9
+                sigmas_= 4400;
+                if nargin < 8
+                    lambda_ = 250;
+                    if nargin < 7
+                        if nargin < 6
+                            error(sprintf('Error. \nUser must supply a voxel x gene matrix, a gene x cell type matrix, a gene names cell array, and a subsetting method'))
+                        end
+                        if ismember(method_, {'MRx3','mRMR','colAMD'})
+                            ng_param_list_ = [100:70:1500, 1750:250:3500, 3855]; 
+                        elseif strcmp(method_, 'DBSCAN')
+                            ng_param_list_ = [0.0001, 0.0004:0.0001:0.001, 0.002:0.001:0.005, 0.015:0.01:0.195]; 
+                        elseif strcmp(method_, 'Entropy')
+                            ng_param_list_ = [0.25,0.5:0.125:2.75,2.8:0.05:3.25];
+                        elseif strcmp(method_, 'Zeisel')
+                            ng_param_list_ = [2:5, 6:2:50]; % made up something here
+                        else
+                            error('Error. \n%s is an incorrect subsetting method identifier',method_)
+                        end
+                    end    
                 end
             end
         end
@@ -70,11 +71,11 @@ for i = 1:length(ng_param_list_)
     tic
     fprintf('Determining GMM classification error, nG parameter value %d/%d\n',i,length(ng_param_list_))
     savegroups = 1;
-    crossval_ = 1;
     gmmstruct = GMM_Nearest_Neighbor_Posterior(C_ind_red, ct_labvec_, k_, crossval_, savegroups);
     fitstruct(i).gmmstruct = gmmstruct;
     fitstruct(i).lambda = lambda_;
     fitstruct(i).crossval = crossval_;
+    fitstruct(i).nG_param = param;
     fitstruct(i).nGen = nGen;
     fitstruct(i).sigmas = sigmas_;
     toc
@@ -98,8 +99,10 @@ end
 neglogposteriors = negloglikelihoods + neglogpriors;
 [~,mininds] = min(neglogposteriors);
 nG_opts = zeros(1,length(mininds));
+nG_param_opts = nG_opts;
 for i = 1:length(mininds)
-    nG_opts(i) = fitstruct(i).nGen;
+    nG_opts(i) = fitstruct(mininds(i)).nGen;
+    nG_param_opts(i) = fitstruct(mininds(i)).nG_param;
 end
 
 for i = 1:length(nG_opts)
@@ -107,7 +110,7 @@ for i = 1:length(nG_opts)
     % Infer cell density per voxel in arbitrary units
     tic
     fprintf('Nonnegative matrix inversion, optimal nG parameter value %d/%d\n',i,length(nG_opts))
-    [E_red,C_red] = GeneSelector(genevct_,voxvgene_,gene_names_,nG_opts(i),lambda_,method_,preloadinds);
+    [E_red,C_red] = GeneSelector(genevct_,voxvgene_,gene_names_,nG_param_opts(i),lambda_,method_,preloadinds);
     B = CellDensityInference(E_red,C_red);
     toc
     %     outstruct(i).Bvals = B; 

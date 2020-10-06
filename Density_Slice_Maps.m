@@ -33,33 +33,34 @@ newVoxMap(nonzerovox) = 1;
 for k = 1:length(typeinds)
     curmap = zeros(size(GENGDmod));
     curmap(nonzerovox) = D(:,typeinds(k));
+    curmax = max(max(max(curmap)));
     for j = 1:length(maplocs)
         curloc = maplocs(j);
         slice_raw = squeeze(curmap(curloc,:,:));
         im = slice_raw;
-        se = strel('diamond',1);
+        se = strel('disk',1,4);
         im = imdilate(im, se);
         im = imerode(im, se);
         bim = double(logical(im));
-        im = interpn(im,2,'linear');
-        bim = interpn(bim,2,'linear');
+        im = interpn(im,3,'spline');
+        bim = interpn(bim,3,'spline');
         bim(bim < 0.67) = 0;
         bim(bim >= 0.67) = 1;
         slice_final = im .* bim;
-        curmax = max(max(slice_final));
+%         curmax = max(max(slice_final));
         bw = squeeze(newVoxMap(curloc,:,:));
         im_ = imdilate(bw, se);
         im_ = imerode(im_, se);
-        bim_ = interpn(im_,2,'linear');
+        bim_ = interpn(im_,3,'spline');
         bim_(bim_ < 0.67) = 0;
         bim_(bim_ >= 0.67) = 1;
         biminds = logical(bim_(:));
-        slice_final(biminds) = slice_final(biminds) + curmax/30;
+%         slice_final(biminds) = slice_final(biminds) + curmax/30;
         bwbounds = bwboundaries(bim_);
         
         f1 = figure;
         set(f1,'Position',[0 0 600 500]); %this to set the size
-        imagesc(slice_final,[0 0.5*curmax]); hold on;
+        imagesc(slice_final,[0 0.6*curmax+eps]); hold on;
         colormap(flipud(pink)); hold on;
         for m = 1:length(bwbounds)
             boundary = bwbounds{m};

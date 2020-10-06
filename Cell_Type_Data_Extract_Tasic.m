@@ -1,4 +1,4 @@
-function [meanexprmat, classkey, entrez_names] = Cell_Type_Data_Extract(classstruct,directory)
+function [meanexprmat, classkey, entrez_names] = Cell_Type_Data_Extract_Tasic(classstruct,directory)
 
 if nargin < 2
     directory = [cd filesep 'MatFiles'];

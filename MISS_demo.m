@@ -20,15 +20,18 @@ matdir = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; % indicat
 
 %% Performing cell type inference and parameter optimization
 load([matdir filesep 'PresetInputs.mat']);
-clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells matdir outstruct
+clearvars -except regvgene genevct classkey gene_names ct_labvec C_indivcells matdir
 testlambda = 250;
 sig = 4400;
+method = 'MRx3';
 k = 5;
+testnG = [50:50:300,301:1200,1255:50:2155,2255:100:3655];
 % testnG = [50:50:450,460:10:1600,1650:50:2500,2600:100:3700,3855];
 % testnG = [50:50:300,301:600,610:10:1200];
 % testnG = [451,505,511,517,537];
 % costfun = 'SumFit';
-% [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+[fitstruct, outstruct] = nG_ParameterFitter(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+save([matdir filesep 'tasic_l250_nocv.mat'],'fitstruct','outstruct');
 %     testlambda = 50;
 %     testnG = [419,500,531,600];
 %     testlambda = 100;
@@ -43,23 +46,23 @@ k = 5;
 %     testnG = [421,437,537,541];
 %     testlambda = 350;
 %     testnG = [434,439,561,607];
-method = 'colAMD';
-testnG = [50:50:300,301:900,955:50:2155,2255:100:3655];
-[fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
-save([matdir filesep 'tasic_colAMD.mat'],'outstruct','fitstruct');
-clear outstruct fitstruct testnG
-
-method = 'DBSCAN';
-testnG = [0.0002, 0.0004:0.0001:0.001, 0.002:0.001:0.195, 0.205:0.02:0.325]; 
-[fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
-save([matdir filesep 'tasic_DBSCAN.mat'],'outstruct','fitstruct');
-clear outstruct fitstruct testnG
-
-method = 'Entropy';
-testnG = [0.5:0.0125:2.75,2.775:0.025:3.2];
-[fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
-save([matdir filesep 'tasic_Entropy.mat'],'outstruct','fitstruct');
-clear outstruct fitstruct testnG
+% method = 'colAMD';
+% testnG = [50:50:300,301:900,955:50:2155,2255:100:3655];
+% [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+% save([matdir filesep 'tasic_colAMD.mat'],'outstruct','fitstruct');
+% clear outstruct fitstruct testnG
+% 
+% method = 'DBSCAN';
+% testnG = [0.0002, 0.0004:0.0001:0.001, 0.002:0.001:0.195, 0.205:0.02:0.325]; 
+% [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+% save([matdir filesep 'tasic_DBSCAN.mat'],'outstruct','fitstruct');
+% clear outstruct fitstruct testnG
+% 
+% method = 'Entropy';
+% testnG = [0.5:0.0125:2.75,2.775:0.025:3.2];
+% [fitstruct, outstruct] = nG_ParameterFitter_Zeisel(regvgene, genevct, gene_names, method, testnG, testlambda, k, C_indivcells, ct_labvec, sig, matdir);
+% save([matdir filesep 'tasic_Entropy.mat'],'outstruct','fitstruct');
+% clear outstruct fitstruct testnG
 
 
 

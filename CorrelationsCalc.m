@@ -1,4 +1,4 @@
-function [LinRvals,PeaRvals] = CorrelationsCalc(outstruct,idx,directory)
+function [LinRvals,PeaRvals,SpearRhovals] = CorrelationsCalc(outstruct,idx,directory)
 % Calculates Lin and Pearson correlations from a pre-created outstruct,
 % with a specified index (idx) that indicates which row of the outstruct to
 % calculate these metrics for.
@@ -8,10 +8,15 @@ if nargin < 3
 end
 
 % Define gross anatomical regions of interest
-neoinds = 57:94; % neocortical regions in the CCF atlas
-foreinds = [1:11,23:94,141:156,170:212]; % forebrain regions in the CCF atlas
+amg = 1:11; sub = 23:25; hip = 26:36; hyp = 37:56; neo = 57:94; 
+olf = 141:148; pal = 149:156; str = 170:177; tha = 178:212;
+cer = 12:22; med = 95:119; mid = 120:140; pns = 157:169;
+
+neoinds = neo; % neocortical regions in the CCF atlas
+foreinds = [amg sub hip hyp olf pal str tha]; % forebrain regions in the CCF atlas minus neocortex
+hindinds = [cer med mid pns]; % mid/hindbrain regions in the CCF atlas
 wbinds = 1:212; % all 212 (bilateral) regions in the CCF atlas
-indcell = {neoinds,foreinds,wbinds};
+indcell = {neoinds,foreinds,hindinds,wbinds};
 
 % The following function calculates the Lin's Concordance Correlation
 % Coefficient.
@@ -84,12 +89,19 @@ for i = 1:length(indcell)
     LinRvals.vip(i) = LinRcalc(kim_vip_wb,sumcts_vip_wb);
     LinRvals.all(i) = LinRcalc(murakami_tot,sumcts_sum);
     LinRvals.micro(i) = LinRcalc(keller_micro.',infer_micro.');
-    LinRvals.neuron(i) = LinRcalc(hh_neuron.',infer_neuron.');
+%     LinRvals.neuron(i) = LinRcalc(hh_neuron.',infer_neuron.');
     
     PeaRvals.pv(i) = corr(kim_pv_wb,sumcts_pv_wb);
     PeaRvals.sst(i) = corr(kim_sst_wb,sumcts_sst_wb);
     PeaRvals.vip(i) = corr(kim_vip_wb,sumcts_vip_wb);
     PeaRvals.all(i) = corr(murakami_tot,sumcts_sum);
     PeaRvals.micro_pearson(i) = corr(keller_micro.',infer_micro.');
-    PeaRvals.neuron_pearson(i) = corr(hh_neuron.',infer_neuron.');
+%     PeaRvals.neuron_pearson(i) = corr(hh_neuron.',infer_neuron.');
+    
+    SpearRhovals.pv(i) = corr(kim_pv_wb,sumcts_pv_wb,'type','Spearman');
+    SpearRhovals.sst(i) = corr(kim_sst_wb,sumcts_sst_wb,'type','Spearman');
+    SpearRhovals.vip(i) = corr(kim_vip_wb,sumcts_vip_wb,'type','Spearman');
+    SpearRhovals.all(i) = corr(murakami_tot,sumcts_sum,'type','Spearman');
+    SpearRhovals.micro_pearson(i) = corr(keller_micro.',infer_micro.','type','Spearman');
+%     SpearRhovals.neuron_pearson(i) = corr(hh_neuron.',infer_neuron.','type','Spearman');
 end

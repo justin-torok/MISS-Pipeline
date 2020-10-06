@@ -1,4 +1,10 @@
-function classstruct = scRNAseq_Data_Extract(directory)
+function classstruct = scRNAseq_Data_Extract_Tasic(directory)
+% Function that creates a hierarchically organized MATLAB struct object
+% that contains all of the cells in the Tasic et al., 2018 and the AIBS,
+% 2018 studies grouped by type and region of origin. These data were
+% downloaded from the AIBS website:
+% https://portal.brain-map.org/atlases-and-data/rnaseq and then extracted
+% into a MATLAB file (ReadData.mat).
 
 if nargin < 1
     directory = [cd filesep 'MatFiles'];

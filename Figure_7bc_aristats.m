@@ -1,4 +1,4 @@
-function Figure_6bc_aristats(randstruct,savenclose)
+function Figure_7bc_aristats(randstruct,savenclose)
 
 if nargin < 2
     savenclose = 0;
@@ -26,7 +26,7 @@ if savenclose
 end
 
 figure; 
-bar_color = [0.7 0.1 0.2];
+bar_color = [1 0 0];
 bar(1:length(randstruct.nclust),randstruct.AdjustedRand,0.75,'FaceColor',bar_color,'EdgeColor','k','LineWidth',1);
 if all(randstruct.AdjustedRand > 0)
     ylim([0,1]);
@@ -42,7 +42,7 @@ set(gca,'XTickLabels',xticklabs);
 set(gca,'FontSize',20);
 title('ARI Across Cluster Number', 'FontSize', 30);
 if savenclose
-    print('ari_barplot','-dtiffn');
+    print('Figure_7_ari_barplot','-dtiffn');
     close
 end
 

@@ -1,4 +1,4 @@
-function Figure_3b_interneuron(outstruct,idx,savenclose,directory)
+function Figure_4b_interneuron_scatter(outstruct,idx,savenclose,directory)
 % Designed to handle an outstruct of dimension length(ngenelist) that has a
 % single field "bvals." idx is the index of interest that is within the
 % range of ngenelist
@@ -145,7 +145,7 @@ xlim([0 max(cat(1,bigvip,datvip))]);
 ylim([0 max(cat(1,bigvip,datvip))]);
 
 if savenclose
-    print('Figure_3b_interneuron_scatter','-dtiffn');
+    print('Figure_4b_interneuron_scatter','-dtiffn');
     close
 end
 end

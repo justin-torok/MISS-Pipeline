@@ -1,4 +1,4 @@
-function Figure_6d_ribrainframe(randstruct,savenclose,directory)
+function Figure_7d_ribrainframe(randstruct,savenclose,directory)
 % Note - does not currently work for mid/hindbrain randstruct
 if nargin < 3
     directory = [cd filesep 'MatFiles'];

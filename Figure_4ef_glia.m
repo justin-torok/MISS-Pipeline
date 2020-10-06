@@ -1,4 +1,4 @@
-function Figure_3de_glia(outstruct,idx,savenclose,directory)
+function Figure_4ef_glia(outstruct,idx,savenclose,directory)
 % Designed to handle an outstruct of dimension length(ngenelist) that has a
 % single field "bvals." idx is the index of interest that is within the
 % range of ngenelist
@@ -106,7 +106,7 @@ set(gca,'FontSize',18);
 title('Glial Density Per Major Region Group','FontSize',20);
 
 if savenclose
-    print('Figure_3de_gliaplots','-dtiffn');
+    print('Figure_4ef_gliaplots','-dtiffn');
     close
 end
 end

@@ -1,4 +1,4 @@
-function [C_indivcells, classkey, entrez_names, ct_labvec] = Cell_Type_Extract_IndivCells(classstruct,directory)
+function [C_indivcells, classkey, entrez_names, ct_labvec] = Cell_Type_Data_Extract_IndivCells_Tasic(classstruct,directory)
 
 if nargin < 2
     directory = [cd filesep 'MatFiles'];

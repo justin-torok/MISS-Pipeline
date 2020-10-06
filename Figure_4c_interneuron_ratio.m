@@ -1,4 +1,4 @@
-function Figure_3c_interneuron_ratio(outstruct,idx,savenclose,directory)
+function Figure_4c_interneuron_ratio(outstruct,idx,savenclose,directory)
 
 if nargin < 4
     directory = [cd filesep 'MatFiles'];
@@ -47,10 +47,14 @@ cmap = flipud(pink(40));
 legplot = 1:40;
 figure('Position',[0 0 1000 50]);
 imagesc(legplot); colormap(cmap);
-set(gca,'XTick',[0, ]);
+set(gca,'XTick',[]);
 set(gca,'YTick',[]);
+if savenclose
+    print('Figure_3c_interneuron_ratios_heatmap','-dtiffn');
+    close
+end
 
-f1 = figure('Position',[0 0 1500 800]); hold on;
+f1 = figure('Position',[0 0 1500 400]); hold on;
 subplot(8,15,1,'Parent',f1);
 subplot(8,15,1:7*15); bar(plotprop_i,'stacked','LineWidth',1); hold on;
 title('Ratios of Pvalb+, Sst+, and Vip+ Interneurons','FontSize',24);
@@ -72,9 +76,7 @@ set(gca,'TickLength',[0 0]);
 set(gca,'YTick',[]);
 
 if savenclose
-    print('Figure_3c_interneuron_ratios','-dtiffn');
-    close
-    print('Figure_3c_interneuron_ratios_heatmap','-diffn');
+    print('Figure_4c_interneuron_ratios','-dtiffn');
     close
 end
 end

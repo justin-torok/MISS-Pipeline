@@ -49,7 +49,7 @@ for k = 1:length(typeinds)
         im = imdilate(im, se);
         im = imerode(im, se);
 %         bim = double(logical(im));
-        im = interpn(im,1,'spline');
+        im = interpn(im,2,'spline');
 %         bim = interpn(bim,3,'spline');
 %         bim(bim < 0.67) = 0;
 %         bim(bim >= 0.67) = 1;
@@ -58,22 +58,30 @@ for k = 1:length(typeinds)
         bw = squeeze(newVoxMap(curloc,:,:));
         im_ = imdilate(bw, se);
         im_ = imerode(im_, se);
-        bim_ = interpn(im_,1,'spline');
+        bim_ = interpn(im_,2,'spline');
         bim_(bim_ < 0.5) = 0;
         bim_(bim_ >= 0.5) = 1;
 %         biminds = logical(bim(:));
         slice_final = im .* bim_;
 %         slice_final(biminds) = slice_final(biminds) + curmax/30;
         bwbounds = bwboundaries(bim_);
+        plotmaxes = zeros(length(bwbounds),2); plotmins = plotmaxes;
+        for m = 1:length(bwbounds)
+            plotmaxes(m,:) = max(bwbounds{m});
+            plotmins(m,:) = min(bwbounds{m});
+        end
+        plotmaxes = max(plotmaxes);
+        plotmins = min(plotmins);
         
         f1 = figure;
         set(f1,'Position',[0 0 600 500]); %this to set the size
-        imagesc(slice_final,[0 0.5*curmax+eps]); hold on;
+        imagesc(slice_final,[0 0.6*curmax+eps]); hold on;
         colormap(flipud(pink)); hold on;
         for m = 1:length(bwbounds)
             boundary = bwbounds{m};
             plot(boundary(:,2),boundary(:,1),'k','LineWidth',0.5); hold on;
         end
+        ylim([plotmins(1)-10, plotmaxes(1)+10]); xlim([plotmins(2)-10, plotmaxes(2)+10]);
         set(gca,'xtick',[]);
         set(gca,'ytick',[]);
         set(gca,'Ydir','reverse')
@@ -82,7 +90,7 @@ for k = 1:length(typeinds)
         title(sprintf('%s Density Map, nG = %d',typenames{k},outstruct(idx).nGen));
         set(gca,'FontSize',24);
         if savenclose
-            print(sprintf('DensityMap_%s_Slice_%d',typenames{k},maplocs(j)),'-dtiffn');
+            print(sprintf('DensityMap_%s_Slice_%d',typenames{k},slicelocs(j)),'-dtiffn');
             close
         end
         clear slice_raw slice_final

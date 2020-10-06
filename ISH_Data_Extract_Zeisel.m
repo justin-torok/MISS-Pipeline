@@ -1,4 +1,4 @@
-function regvgene = ISH_Data_Extract_Zeisel(directory)
+function voxvgene = ISH_Data_Extract_Zeisel(directory)
 
 if nargin < 1
     directory = [cd filesep 'MatFiles'];
@@ -44,5 +44,5 @@ for j = 1:length(unique(redgenlist_sort))
         k = k + 1;
     end
 end
-regvgene = perCell;
+voxvgene = perCell;
 end

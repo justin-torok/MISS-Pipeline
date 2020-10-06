@@ -1,0 +1,49 @@
+function Figure_7_AMI(mistruct,savenclose)
+
+if nargin < 2
+    savenclose = 0;
+end
+
+% figure;
+% plot(1:length(randstruct.nclust),randstruct.StdAboveMean,'b-','LineWidth',3.5);
+% ylabel('SD Above Mean','FontSize',25);
+% if all(randstruct.StdAboveMean > 5)
+%     ylim([5,max(randstruct.StdAboveMean)+1])
+%     set(gca,'YTick',[6 13 20]);
+% end
+% xlabel('Number of Clusters','FontSize',25);
+% xlim([0.5 5.5]);
+% for i = 1:length(randstruct.nclust)
+%     xticklabs{i} = ['k = ' num2str(randstruct.nclust(i))];
+% end
+% set(gca,'XTickLabels',xticklabs);
+% set(gca,'FontSize',20);
+% title('MISS Rand Index vs. Null', 'FontSize', 30);
+
+% if savenclose
+%     print('ari_stdlineplot','-dtiffn');
+%     close
+% end
+
+figure; 
+bar_color = [0.7 0.1 0.2];
+bar(1:length(mistruct.nclust),mistruct.AdjustedMutualInfo,0.75,'FaceColor',bar_color,'EdgeColor','k','LineWidth',1);
+if all(mistruct.AdjustedMutualInfo >= 0)
+    ylim([0,1]);
+    set(gca,'YTick',[0 0.5 1]);
+end
+ylabel('AMI','FontSize',25);
+xlabel('Number of Clusters','FontSize',25);
+xlim([0.5 5.5]);
+for i = 1:length(mistruct.nclust)
+    xticklabs{i} = ['k = ' num2str(mistruct.nclust(i))];
+end
+set(gca,'XTickLabels',xticklabs);
+set(gca,'FontSize',20);
+title('AMI Across Cluster Number', 'FontSize', 30);
+if savenclose
+    print('ami_barplot','-dpng');
+    close
+end
+
+end

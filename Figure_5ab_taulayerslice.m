@@ -1,4 +1,4 @@
-function Figure_4ab_taulayerslice(outstruct,idx,slicelocs,savenclose,directory)
+function Figure_5ab_taulayerslice(outstruct,idx,slicelocs,savenclose,directory)
 
 if nargin < 5
     directory = [cd filesep 'MatFiles'];
@@ -202,7 +202,7 @@ for k = 1:length(redcellnames)
 end
 
 if savenclose
-    print('Figure_4ab_layertype','-dtiff');
+    print('Figure_5ab_layertype','-dtiff');
     close
 end
 end

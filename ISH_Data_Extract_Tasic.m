@@ -1,4 +1,4 @@
-function regvgene = ISH_Data_Extract(classstruct, directory)
+function regvgene = ISH_Data_Extract_Tasic(classstruct, directory)
 
 if nargin < 2
     directory = [cd filesep 'MatFiles'];
