@@ -1,10 +1,25 @@
-load('Tasic_Inputs.mat');
+function outstruct = Cell_Count_Inference_SumFit(method,ngparamlist,lambda,directory)
+
+if nargin < 4
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 3
+        lambda = 250;
+        if nargin < 2
+            ngparamlist = [50:50:300,301:600,610:10:1600,1650:100:3750];
+            if nargin < 1
+                method = 'MRx3';
+            end
+        end
+    end
+end
+
+load('Tasic_Inputs.mat','genevct','voxvgene','gene_names');
 outstruct = struct;
-ngparamlist = [50:50:300,301:600,610:10:1600,1650:100:3750];
-lambda = 250;
-method = 'MRx3';
-preloadinds = MRx3_Selector(genevct,voxvgene,3855,lambda);
-directory = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS';
+if strcmp(method,'MRx3')
+    preloadinds = MRx3_Selector(genevct,voxvgene,size(voxvgene,2),lambda);
+else
+    preloadinds = [];
+end
 
 for k = 1:length(ngparamlist)
     fprintf('Calculating sum fit, nG parameter value %d/%d\n',k,length(ngparamlist))
@@ -49,4 +64,4 @@ for k = 1:length(ngparamlist)
 %     sumfitvec(k) = sumfit;
     outstruct(k).sumfit = sumfit;
 end 
-save([directory filesep 'tasic_MRx3_l250_fullrange.mat'],'outstruct');
+end
