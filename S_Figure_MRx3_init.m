@@ -11,14 +11,14 @@ end
 
 % directory = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS';
 % lambda = 250;
-load([directory filesep 'PresetInputs.mat'],'genevct','regvgene');
+load([directory filesep 'Tasic_Inputs.mat'],'genevct','voxvgene');
 seed_true = 30;
-geneinds_true = MRx3_Selector(genevct,regvgene,3855,lambda,seed_true);
+geneinds_true = MRx3_Selector(genevct,voxvgene,3855,lambda,seed_true);
 
 seeds_test = [10,20,50,80];
 geneinds_test = zeros(length(seeds_test),3855);
 for i = 1:length(seeds_test)
-    geneinds_test(i,:) = MRx3_Selector(genevct,regvgene,3855,lambda,seeds_test(i));
+    geneinds_test(i,:) = MRx3_Selector(genevct,voxvgene,3855,lambda,seeds_test(i));
 end
 
 testngs = 50:3855;

@@ -1,22 +1,22 @@
-% function S_Figure_Residuals(nG,lambda,savenclose,directory)
-% 
-% if nargin < 4
-%     directory = [cd filesep 'MatFiles'];
-%     if nargin < 3
-%         savenclose = 0;
-%         if nargin < 2
-%             lambda = 250;
-%             if nargin < 1
-%                 nG = 529;
-%             end
-%         end
-%     end
-% end
-lambda = 250; nG = 529; directory = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; savenclose = 0;
-load([directory filesep 'PresetInputs.mat'],'genevct','regvgene','gene_names','structIndex','listBmap','nonzerovox');
+function S_Figure_Residuals(nG,lambda,savenclose,directory)
+
+if nargin < 4
+    directory = [cd filesep 'MatFiles'];
+    if nargin < 3
+        savenclose = 0;
+        if nargin < 2
+            lambda = 250;
+            if nargin < 1
+                nG = 529;
+            end
+        end
+    end
+end
+% lambda = 250; nG = 529; directory = '/Users/justintorok/Documents/MATLAB/CellType/MatFiles/MISS'; savenclose = 0;
+load([directory filesep 'Tasic_Inputs.mat'],'genevct','voxvgene','gene_names','listBmap','nonzerovox');
 sampleinds = [70,92,186];
 listBvec = listBmap(nonzerovox);
-[E_red, C_red] = GeneSelector(genevct,regvgene,gene_names,nG,lambda,'MRx3');
+[E_red, C_red] = GeneSelector(genevct,voxvgene,gene_names,nG,lambda,'MRx3');
 D = CellDensityInference(E_red,C_red);
 E_infer = C_red*D.';
 
@@ -57,6 +57,10 @@ xlabel('');
 set(gca,'TickLength',[0 0])
 title('Sum of Absolute Error per Voxel');
 set(gca, 'FontSize', 24);
+if savenclose
+    print('residuals','-dtiffn');
+    close;
+end
 
 % % load pervoxLayerMaps.mat
 % % load default_mousereg.mat
@@ -69,7 +73,7 @@ input_struct.xfac = 15;
 input_struct.sphere = 1;
 % input_struct.size_constant = 3;
 input_struct.pointsize = 0.1;
-input_struct.savenclose = 1;
+input_struct.savenclose = savenclose;
 
 % for j = 1:length(structIndex)
 %     curres = residuals(listBvec==j);
@@ -96,5 +100,5 @@ input_struct.region_groups = reggroups;
 input_struct.img_labels = 'mean_residual_error';
 figure;
 brainframe(input_struct);
-% end
+end
 

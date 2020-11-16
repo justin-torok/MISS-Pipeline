@@ -9,7 +9,7 @@ if nargin < 4
     end
 end
 
-load([directory filesep 'PresetInputs.mat'],'listBmap');
+load([directory filesep 'Tasic_Inputs.mat'],'listBmap');
 
 neoinds = 57:94; 
 foreinds = [1:11,23:56,141:156,170:212];
